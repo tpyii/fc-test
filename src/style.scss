@@ -9,3 +9,15 @@
 body {
   font-family: 'Roboto', sans-serif;
 }
+
+.wrapper {
+  display: flex;
+}
+
+.section__left {
+  width: 20%;
+}
+
+.section__right {
+  width: 80%;
+}
