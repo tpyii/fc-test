@@ -7,6 +7,7 @@ import listPlugin from '@fullcalendar/list';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
 import ruLocale from '@fullcalendar/core/locales/ru';
+import moment from 'moment';
 
 import './style.scss';
 
@@ -14,11 +15,13 @@ class Calendar extends React.Component {
   state = {
     sourceTitle: '',
     sourceParent: '',
+    eventId: '',
     eventTitle: '',
     eventResource: [],
     eventStart: '',
     eventEnd: '',
-    allDay: false,
+    eventAllDay: false,
+    eventEditing: false,
 
     resources: [
       {
@@ -55,20 +58,21 @@ class Calendar extends React.Component {
     events: [
       {
         id: '1',
-        resourceId: 's1',
+        resourceIds: ['s1'],
         title: 'The Title',
-        start: '2019-07-05T12:00:00'
+        start: '2019-07-05T12:00:00',
+        end: '2019-07-05T13:00:00'
       },
       {
         id: '2',
-        resourceId: 's2',
+        resourceIds: ['s2'],
         title: 'The Title 2',
         start: '2019-07-05T16:00:00',
         end: '2019-07-05T17:00:00'
       },
       {
         id: '3',
-        resourceIds: ['s3'],
+        resourceIds: ['s3', 's2'],
         title: 'The Title 3',
         start: '2019-07-05T17:00:00',
         end: '2019-07-05T18:00:00'
@@ -82,8 +86,29 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
-      // console.log(info , info.event.getResources());
+      this.setState({
+        eventId: info.event.id,
+        eventEditing: true
+      });
 
+      let editEvent = {};
+      let resourceIds = [];
+      const resources = info.event.getResources();
+
+      if(resources) {
+        resources.map(resource => {
+          resourceIds.push(resource.id)
+        })
+
+        editEvent.eventResource = resourceIds;
+      }
+
+      editEvent.eventTitle = info.event.title;
+      editEvent.eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
+      editEvent.eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
+      editEvent.eventAllDay = info.event.allDay;
+
+      this.setState({...editEvent});
     }
   }
 
@@ -107,12 +132,11 @@ class Calendar extends React.Component {
       this.setState(state => {
         return {
           eventResource: [info.resource.id],
-          allDay: info.allDay,
+          eventAllDay: info.allDay,
           eventStart,
           eventEnd
         }
       });
-
     }
   }
 
@@ -136,6 +160,89 @@ class Calendar extends React.Component {
 
     this.setState({
       [name]: value
+    });
+  }
+
+  handleDrop = info => {
+    console.log(info);
+    const typeView = info.view.type;
+    if(typeView == 'resourceTimelineDay' ||
+       typeView == 'resourceTimelineWeek' ||
+       typeView == 'resourceTimelineMonth') {
+
+      this.updateEventAfterDrop(info);
+    }
+  }
+
+  updateEventAfterDrop = info => {
+    const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
+    const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
+
+    const events = this.state.events.map(item => {
+      if(item.id === info.event.id) {
+        let event = {
+          start: eventStart,
+          end: eventEnd
+        }
+
+        if(info.newResource && info.oldResource) {
+          let resourceIds = item.resourceIds;
+          const index = resourceIds.indexOf(info.oldResource.id);
+          resourceIds.splice(index, 1, info.newResource.id);
+          event.resourceIds = resourceIds;
+        }
+
+        return {...item, ...event}
+      }
+
+      return item;
+    });
+
+    this.setState({events});
+  }
+
+  updateEvent = e => {
+    e.preventDefault();
+
+    const events = this.state.events.map(item => {
+      if(item.id === this.state.eventId) {
+        let event = {
+          start: this.state.eventStart,
+          end: this.state.eventEnd,
+          title: this.state.eventTitle,
+          resourceIds: this.state.eventResource
+        }
+
+        return {...item, ...event}
+      }
+
+      return item;
+    });
+
+    console.log(events)
+
+    this.setState({
+      events,
+      eventId: '',
+      eventTitle: '',
+      eventResource: [],
+      eventStart: '',
+      eventEnd: '',
+      eventAllDay: false,
+      eventEditing: false
+    });
+  }
+
+  handleCancelEditEvent = e => {
+    e.preventDefault();
+    this.setState({
+      eventId: '',
+      eventTitle: '',
+      eventResource: [],
+      eventStart: '',
+      eventEnd: '',
+      eventAllDay: false,
+      eventEditing: false
     });
   }
 
@@ -231,8 +338,8 @@ class Calendar extends React.Component {
             </form>
           </div>
           <div className="sectin__form">
-            <h3>Add Event</h3>
-            <form onSubmit={this.addEvent}>
+            <h3>{this.state.eventEditing ? 'Edit' : 'Add'} Event</h3>
+            <form onSubmit={this.state.eventEditing ? this.updateEvent : this.addEvent}>
               <p>
                 <label>
                   Title: <br />
@@ -288,7 +395,9 @@ class Calendar extends React.Component {
                 </label>
               </p>
               <p>
-                <input type="submit" />
+                <input type="hidden" value={this.state.eventId} />
+                <input type="submit" value={this.state.eventEditing ? 'Update' : 'Add'} />
+                {this.state.eventEditing && <button onClick={this.handleCancelEditEvent}>Cancel</button>}
               </p>
             </form>
           </div>
@@ -315,18 +424,23 @@ class Calendar extends React.Component {
             }}
             views={{
               resourceTimelineDay: {
-                selectable: true
+                selectable: true,
+                
               },
               resourceTimelineWeek: {
-                selectable: true
+                selectable: true,
+                
               },
               resourceTimelineMonth: {
-                selectable: true
+                selectable: true,
+                
               }
             }}
+            editable={true}
             nowIndicator={true}
             eventClick={this.handleEventClick}
             select={this.handleSelect}
+            eventDrop={this.handleDrop}
             resources={this.state.resources}
             events={this.state.events}
           />
