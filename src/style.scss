@@ -10,14 +10,26 @@ body {
   font-family: 'Roboto', sans-serif;
 }
 
+a {
+  color: #000;
+
+  &.active {
+    color: #3787d8;
+  }
+}
+
 .wrapper {
   display: flex;
 }
 
-.section__left {
-  width: 300px;
+.section {
+  
+  &.section__left {
+    width: 300px;
+  }
+
+  &.section__right {
+    width: 80%;
+  }
 }
 
-.section__right {
-  width: 80%;
-}
