@@ -35,7 +35,7 @@ class Registration extends React.Component {
     if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
       return false;
 
-    fetch('/api/users', {
+    fetch('/fc-test/api/users', {
       method: 'POST',
       body: JSON.stringify({
         email: this.state.userEmail,
