@@ -40,7 +40,8 @@ class Calendar extends React.Component {
       addSource: this.addSource,
       addEvent: this.addEvent,
       fetchResources: this.fetchResources,
-      fetchEvents: this.fetchEvents
+      fetchEvents: this.fetchEvents,
+      handleDeleteEvent: this.handleDeleteEvent
     }
   }
 
@@ -104,7 +105,10 @@ class Calendar extends React.Component {
         return {
           eventResource: [info.resource.id],
           eventStart,
-          eventEnd
+          eventEnd,
+          eventUsers: [],
+          eventEditing: false,
+          eventId: ''
         }
       });
     }
@@ -147,57 +151,125 @@ class Calendar extends React.Component {
     const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
     const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
 
-    const events = this.state.events.map(item => {
-      if(item.id === info.event.id) {
-        let event = {
-          start: eventStart,
-          end: eventEnd
-        }
+    let item = this.state.events.filter(item => item.id === info.event.id)[0];
+    let event = {
+      title: item.title,
+      start: eventStart,
+      end: eventEnd,
+    }
 
-        if(info.newResource && info.oldResource) {
-          let resourceIds = item.resourceIds;
-          const index = resourceIds.indexOf(info.oldResource.id);
-          resourceIds.splice(index, 1, info.newResource.id);
-          event.resourceIds = resourceIds;
-        }
+    if(info.newResource && info.oldResource) {
+      let resourceIds = item.resourceIds;
+      const index = resourceIds.indexOf(info.oldResource.id);
+      resourceIds.splice(index, 1, info.newResource.id);
+      event.resourceIds = resourceIds;
+    }
 
-        return {...item, ...event}
+    fetch(`/fc-test/api/events/${info.event.id}`, {
+      method: 'PUT',
+      body: JSON.stringify(event),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
       }
 
-      return item;
-    });
+      if(result.event) {
 
-    this.setState({events});
+        let event = {}
+
+        if(result.event.start)
+          event.start = result.event.start
+        if(result.event.end)
+          event.end = result.event.end
+        if(result.event.title)
+          event.title = result.event.title
+        if(result.event.resourceIds)
+          event.resourceIds = result.event.resourceIds
+        if(result.event.users)
+          event.users = result.event.users
+
+        const events = this.state.events.map(item => {
+          if(item.id === info.event.id)
+            return {...item, ...event}
+
+          return item;
+        });
+
+        this.setState({events})
+      }
+    })
+    .catch(e => console.log(e));
   }
 
   updateEvent = e => {
     e.preventDefault();
 
-    const events = this.state.events.map(item => {
-      if(item.id === this.state.eventId) {
-        let event = {
-          start: this.state.eventStart,
-          end: this.state.eventEnd,
-          title: this.state.eventTitle,
-          resourceIds: this.state.eventResource
-        }
+    if(!this.state.eventTitle.trim().length ||
+       !this.state.eventStart.trim().length ||
+       !this.state.eventEnd.trim().length   ||
+       !this.state.eventResource.length     ||
+       !this.state.eventUsers.length)
+      return;
 
-        return {...item, ...event}
+    const event = {
+      resourceIds: this.state.eventResource,
+      title: this.state.eventTitle,
+      start: this.state.eventStart,
+      end: this.state.eventEnd,
+      users: this.state.eventUsers
+    }
+
+    fetch(`/fc-test/api/events/${this.state.eventId}`, {
+      method: 'PUT',
+      body: JSON.stringify(event),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
       }
 
-      return item;
-    });
+      if(result.event) {
 
-    this.setState({
-      events,
-      eventId: '',
-      eventTitle: '',
-      eventResource: [],
-      eventUsers: [],
-      eventStart: '',
-      eventEnd: '',
-      eventEditing: false
-    });
+        let event = {}
+
+        if(result.event.start)
+          event.start = result.event.start
+        if(result.event.end)
+          event.end = result.event.end
+        if(result.event.title)
+          event.title = result.event.title
+        if(result.event.resourceIds)
+          event.resourceIds = result.event.resourceIds
+        if(result.event.users)
+          event.users = result.event.users
+
+        const events = this.state.events.map(item => {
+          if(item.id === this.state.eventId)
+            return {...item, ...event}
+
+          return item;
+        });
+
+        this.setState(state => {
+          return {
+            eventId: '',
+            eventResource: [],
+            eventUsers: [],
+            eventTitle: '',
+            eventStart: '',
+            eventEnd: '',
+            eventEditing: false,
+            events: events
+          }
+        })
+      }
+    })
+    .catch(e => console.log(e));
   }
 
   handleCancelEditEvent = e => {
@@ -211,6 +283,39 @@ class Calendar extends React.Component {
       eventEnd: '',
       eventEditing: false
     });
+  }
+
+  handleDeleteEvent = e => {
+    e.preventDefault();
+
+    if(!this.state.eventId)
+      return;
+
+    fetch(`/fc-test/api/events/${this.state.eventId}`, {
+      method: 'DELETE'
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+      }
+
+      if(result.event) {
+        const updatedEvents = this.state.events.filter(event => event.id !== result.event)
+      
+        this.setState({
+          eventId: '',
+          eventTitle: '',
+          eventResource: [],
+          eventUsers: [],
+          eventStart: '',
+          eventEnd: '',
+          eventEditing: false,
+          events: updatedEvents
+        });
+      }
+    })
+    .catch(e => console.log(e));
   }
 
   addSource = e => {
@@ -236,11 +341,13 @@ class Calendar extends React.Component {
         return;
       }
 
-      this.setState(state => {
-        return {
-          resources: [...state.resources, result]
-        }
-      })
+      if(result) {
+        this.setState(state => {
+          return {
+            resources: [...state.resources, result]
+          }
+        })
+      }
     })
     .catch(e => console.log(e));
 
@@ -253,7 +360,11 @@ class Calendar extends React.Component {
   addEvent = e => {
     e.preventDefault();
 
-    if(!this.state.eventTitle.trim().length)
+    if(!this.state.eventTitle.trim().length ||
+       !this.state.eventStart.trim().length ||
+       !this.state.eventEnd.trim().length   ||
+       !this.state.eventResource.length     ||
+       !this.state.eventUsers.length)
       return;
 
     const event = {
@@ -288,8 +399,6 @@ class Calendar extends React.Component {
           }
         })
       }
-
-      console.log(result);
     })
     .catch(e => console.log(e));
   }
@@ -303,11 +412,13 @@ class Calendar extends React.Component {
           return;
         }
 
-        this.setState(state => {
-          return {
-            resources: result
-          }
-        })
+        if(result) {
+          this.setState(state => {
+            return {
+              resources: result
+            }
+          })
+        }
       })
       .catch(e => console.log(e));
   }
@@ -321,11 +432,14 @@ class Calendar extends React.Component {
           return;
         }
 
-        this.setState(state => {
-          return {
-            users: result
-          }
-        })
+        if(result) {
+          this.setState(state => {
+            return {
+              users: result
+            }
+          })
+        }
+        
       })
       .catch(e => console.log(e));
   }
@@ -338,7 +452,8 @@ class Calendar extends React.Component {
           console.log(result.error);
         }
 
-        this.setState({events: result.events})
+        if(result.events)
+          this.setState({events: result.events})
       })
       .catch(e => console.log(e));
   }
@@ -489,6 +604,7 @@ function EventsForm() {
             <p>
               <input type="hidden" value={context.eventId} />
               <input type="submit" value={context.eventEditing ? 'Update' : 'Add'} />
+              {context.eventEditing && <button onClick={context.handleDeleteEvent}>Delete</button>}
               {context.eventEditing && <button onClick={context.handleCancelEditEvent}>Cancel</button>}
             </p>
           </form>
