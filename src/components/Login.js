@@ -1,4 +1,7 @@
 import React from 'react';
+import { Redirect } from 'react-router';
+import { AppContext } from './App';
+
 
 class Login extends React.Component {
   state = {
@@ -29,7 +32,7 @@ class Login extends React.Component {
     });
   }
 
-  login = event => {
+  login = (event, toggleLogin) => {
     event.preventDefault();
 
     if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
@@ -43,50 +46,64 @@ class Login extends React.Component {
       }),
       headers: {'content-type': 'application/json'}
     })
-    .then(function(response) {
-      console.log(response.status);
-      return response.json();
+    .then(response => response.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+        return;
+      }
+
+      toggleLogin(result.id, result.role)
     })
-    .then(function(data) {
-      console.log(data)
-    })
-    .catch(alert);
+    .catch(e => console.log(e));
   }
 
   render() {
     return (
       <div className="wrapper">
         <div className="section section__left">
-          <div className="section__form">
-            <h3>Login</h3>
-            <form onSubmit={this.login}>
-              <p>
-                <label>
-                  Email: <br />
-                  <input 
-                    type="email"
-                    name="userEmail" 
-                    value={this.state.userEmail} 
-                    onChange={this.handleInputChange} 
-                  />
-                </label>
-              </p>
-              <p>
-                <label>
-                  Password: <br />
-                  <input 
-                    type="password"
-                    name="userPassword" 
-                    value={this.state.userPassword}  
-                    onChange={this.handleInputChange}
-                  />
-                </label>
-              </p>
-              <p>
-                <input type="submit" value="Login" />
-              </p>
-            </form>
-          </div>
+          <AppContext.Consumer>
+            {app => (
+              app.isLogin ? (
+
+                <Redirect to="/fc-test" />
+
+              ) : (
+
+                <div className="section__form">
+                  <h3>Login</h3>
+                  <form onSubmit={e => this.login(e, app.toggleLogin)}>
+                    <p>
+                      <label>
+                        Email: <br />
+                        <input 
+                          type="email"
+                          name="userEmail" 
+                          value={this.state.userEmail} 
+                          onChange={this.handleInputChange} 
+                        />
+                      </label>
+                    </p>
+                    <p>
+                      <label>
+                        Password: <br />
+                        <input 
+                          type="password"
+                          name="userPassword" 
+                          value={this.state.userPassword}  
+                          onChange={this.handleInputChange}
+                        />
+                      </label>
+                    </p>
+                    <p>
+                      <input type="submit" value="Login" />
+                    </p>
+                  </form>
+                </div>
+
+              )
+            )}
+          </AppContext.Consumer>
         </div>
         <div className="section section__right">
         </div>

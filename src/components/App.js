@@ -12,13 +12,25 @@ class App extends React.Component {
     this.state = {
       userId: '',
       userGroup: '',
-      logout: this.logout
+      isLogin: false,
+      logout: this.logout,
+      toggleLogin: this.toggleLogin
     }
   }
 
   componentWillMount = () => {
     if(!this.state.userId)
       this.auth();
+  }
+
+  toggleLogin = (id, role) => {
+    this.setState(state => {
+      return {
+        userId: state.userId ? '' : id,
+        userGroup: state.userGroup ? '' : role,
+        isLogin: !state.isLogin
+      }
+    });
   }
 
   auth = () => {
@@ -32,7 +44,8 @@ class App extends React.Component {
 
         this.setState({
           userId: result.id,
-          userGroup: result.role
+          userGroup: result.role,
+          isLogin: true
         })
       })
       .catch(e => console.log(e));
@@ -49,7 +62,11 @@ class App extends React.Component {
           return;
         }
 
-        this.setState({userId: ''})
+        this.setState({
+          userId: '',
+          userGroup: '',
+          isLogin: false
+        })
       })
       .catch(e => console.log(e));
   }
@@ -103,14 +120,18 @@ function Sidebar() {
 
 function Content() {
   return (
-    <div className="section section__right">
-      <Switch>
-        <Route exact path="/fc-test" component={Calendar} />
-        <Route path="/fc-test/registration" component={Registration} />
-        <Route path="/fc-test/login" component={Login} />
-        <Route render={() => <div>Not Found</div>} />
-      </Switch>
-    </div>
+    <AppContext.Consumer>
+      {app => (
+        <div className="section section__right">
+          <Switch>
+            <Route exact path="/fc-test" component={app.isLogin ? Calendar : () => <div>Welcome!</div>} />
+            <Route path="/fc-test/registration" component={Registration} />
+            <Route path="/fc-test/login" component={Login} />
+            <Route render={() => <div>Not Found</div>} />
+          </Switch>
+        </div>
+      )}
+    </AppContext.Consumer>
   )
 }
 

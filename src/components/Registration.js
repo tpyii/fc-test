@@ -32,25 +32,30 @@ class Registration extends React.Component {
   addUser = event => {
     event.preventDefault();
 
-    if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
+    if(!this.state.userEmail.trim().length || 
+       !this.state.userPassword.trim().length)
       return false;
+
+    const body = {
+      email: this.state.userEmail,
+      password: this.state.userPassword
+    }
 
     fetch('/fc-test/api/users', {
       method: 'POST',
-      body: JSON.stringify({
-        email: this.state.userEmail,
-        password: this.state.userPassword
-      }),
+      body: JSON.stringify(body),
       headers: {'content-type': 'application/json'}
     })
-    .then(function(response) {
-      console.log(response.status);
-      return response.json();
+    .then(response => response.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error)
+        return;
+      }
+
+      location.href = '/fc-test/login';
     })
-    .then(function(data) {
-      console.log(data)
-    })
-    .catch(alert);
+    .catch(e => console.log(e));
   }
 
   render() {

@@ -17,38 +17,18 @@ class Calendar extends React.Component {
     this.state = {
       sourceTitle: '',
       sourceParent: '',
+
       eventId: '',
       eventTitle: '',
       eventResource: [],
+      eventUsers: [],
       eventStart: '',
       eventEnd: '',
-      eventAllDay: false,
       eventEditing: false,
 
+      users: [],
       resources: [],
-      events: [
-        {
-          id: '1',
-          resourceIds: ['1'],
-          title: 'The Title',
-          start: '2019-07-05T12:00:00',
-          end: '2019-07-05T13:00:00'
-        },
-        {
-          id: '2',
-          resourceIds: ['2'],
-          title: 'The Title 2',
-          start: '2019-07-05T16:00:00',
-          end: '2019-07-05T17:00:00'
-        },
-        {
-          id: '3',
-          resourceIds: ['3', '2'],
-          title: 'The Title 3',
-          start: '2019-07-05T17:00:00',
-          end: '2019-07-05T18:00:00'
-        }
-      ],
+      events: [],
 
       handleEventClick: this.handleEventClick,
       handleSelect: this.handleSelect,
@@ -59,12 +39,15 @@ class Calendar extends React.Component {
       handleCancelEditEvent: this.handleCancelEditEvent,
       addSource: this.addSource,
       addEvent: this.addEvent,
-      fetchResources: this.fetchResources
+      fetchResources: this.fetchResources,
+      fetchEvents: this.fetchEvents
     }
   }
 
   componentWillMount = () => {
     this.fetchResources();
+    this.fetchUsers();
+    this.fetchEvents();
   }
 
   handleEventClick = info => {
@@ -81,6 +64,7 @@ class Calendar extends React.Component {
       let editEvent = {};
       let resourceIds = [];
       const resources = info.event.getResources();
+      const users = info.event.extendedProps.users || [];
 
       if(resources) {
         resources.map(resource => {
@@ -93,7 +77,7 @@ class Calendar extends React.Component {
       editEvent.eventTitle = info.event.title;
       editEvent.eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
       editEvent.eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
-      editEvent.eventAllDay = info.event.allDay;
+      editEvent.eventUsers = users;
 
       this.setState({...editEvent});
     }
@@ -119,7 +103,6 @@ class Calendar extends React.Component {
       this.setState(state => {
         return {
           eventResource: [info.resource.id],
-          eventAllDay: info.allDay,
           eventStart,
           eventEnd
         }
@@ -151,7 +134,6 @@ class Calendar extends React.Component {
   }
 
   handleDrop = info => {
-    console.log(info);
     const typeView = info.view.type;
     if(typeView == 'resourceTimelineDay' ||
        typeView == 'resourceTimelineWeek' ||
@@ -211,9 +193,9 @@ class Calendar extends React.Component {
       eventId: '',
       eventTitle: '',
       eventResource: [],
+      eventUsers: [],
       eventStart: '',
       eventEnd: '',
-      eventAllDay: false,
       eventEditing: false
     });
   }
@@ -224,9 +206,9 @@ class Calendar extends React.Component {
       eventId: '',
       eventTitle: '',
       eventResource: [],
+      eventUsers: [],
       eventStart: '',
       eventEnd: '',
-      eventAllDay: false,
       eventEditing: false
     });
   }
@@ -275,23 +257,41 @@ class Calendar extends React.Component {
       return;
 
     const event = {
-      id: Date.now(),
       resourceIds: this.state.eventResource,
       title: this.state.eventTitle,
       start: this.state.eventStart,
       end: this.state.eventEnd,
-      allDay: this.state.allDay
+      users: this.state.eventUsers
     }
 
-    this.setState(state => {
-      return {
-        eventResource: [],
-        eventTitle: '',
-        eventStart: '',
-        eventEnd: '',
-        events: [...state.events, event]
-      }
+    fetch('/fc-test/api/events', {
+      method: 'POST',
+      body: JSON.stringify(event),
+      headers: {'content-type': 'application/json'}
     })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+      }
+
+      if(result.event) {
+        this.setState(state => {
+          return {
+            eventId: '',
+            eventResource: [],
+            eventUsers: [],
+            eventTitle: '',
+            eventStart: '',
+            eventEnd: '',
+            events: [...state.events, result.event]
+          }
+        })
+      }
+
+      console.log(result);
+    })
+    .catch(e => console.log(e));
   }
 
   fetchResources = () => {
@@ -308,6 +308,37 @@ class Calendar extends React.Component {
             resources: result
           }
         })
+      })
+      .catch(e => console.log(e));
+  }
+
+  fetchUsers = () => {
+    fetch('/fc-test/api/users')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error) {
+          console.log(result.error);
+          return;
+        }
+
+        this.setState(state => {
+          return {
+            users: result
+          }
+        })
+      })
+      .catch(e => console.log(e));
+  }
+
+  fetchEvents = () => {
+    fetch('/fc-test/api/events')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error) {
+          console.log(result.error);
+        }
+
+        this.setState({events: result.events})
       })
       .catch(e => console.log(e));
   }
@@ -405,6 +436,28 @@ function EventsForm() {
                         value={resource.id}
                       >
                         {resource.title}
+                      </option>
+                    ))
+                  }
+                </select>
+              </label>
+            </p>
+            <p>
+              <label>
+                Users: <br />
+                <select 
+                  multiple={true}
+                  name="eventUsers" 
+                  value={context.eventUsers}  
+                  onChange={context.handleInputChange}
+                >
+                  {
+                    context.users.map(user => (
+                      <option 
+                        key={user.id} 
+                        value={user.id}
+                      >
+                        {user.email}
                       </option>
                     ))
                   }
