@@ -41,7 +41,8 @@ class Calendar extends React.Component {
       addEvent: this.addEvent,
       fetchResources: this.fetchResources,
       fetchEvents: this.fetchEvents,
-      handleDeleteEvent: this.handleDeleteEvent
+      handleDeleteEvent: this.handleDeleteEvent,
+      handleResize: this.handleResize,
     }
   }
 
@@ -144,6 +145,59 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineMonth') {
 
       this.updateEventAfterDrop(info);
+    }
+  }
+
+  handleResize = info => {
+    const typeView = info.view.type;
+    if(typeView == 'resourceTimelineDay' ||
+       typeView == 'resourceTimelineWeek' ||
+       typeView == 'resourceTimelineMonth') {
+
+      const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
+      const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
+
+      let item = this.state.events.filter(item => item.id === info.event.id)[0];
+      let event = {
+        title: item.title,
+        start: eventStart,
+        end: eventEnd,
+      }
+
+      fetch(`/fc-test/api/events/${info.event.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(event),
+        headers: {'content-type': 'application/json'}
+      })
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error) {
+          console.log(result.error);
+        }
+
+        if(result.event) {
+
+          let event = {}
+
+          if(result.event.start)
+            event.start = result.event.start
+          if(result.event.end)
+            event.end = result.event.end
+          if(result.event.title)
+            event.title = result.event.title
+
+          const events = this.state.events.map(item => {
+            if(item.id === info.event.id)
+              return {...item, ...event}
+
+            return item;
+          });
+
+          this.setState({events})
+        }
+      })
+      .catch(e => console.log(e));
+
     }
   }
 
@@ -665,6 +719,7 @@ function Content() {
               eventClick={calendar.handleEventClick}
               select={calendar.handleSelect}
               eventDrop={calendar.handleDrop}
+              eventResize={calendar.handleResize}
               resources={calendar.resources}
               events={calendar.events}
             />
