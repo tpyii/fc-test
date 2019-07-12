@@ -38,7 +38,7 @@ class Login extends React.Component {
     if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
       return false;
 
-    fetch('/fc-test/api/auth', {
+    fetch('/api/auth', {
       method: 'POST',
       body: JSON.stringify({
         email: this.state.userEmail,
@@ -66,7 +66,7 @@ class Login extends React.Component {
             {app => (
               app.isLogin ? (
 
-                <Redirect to="/fc-test" />
+                <Redirect to="/" />
 
               ) : (
 

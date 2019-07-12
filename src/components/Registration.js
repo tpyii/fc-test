@@ -1,9 +1,11 @@
 import React from 'react';
+import { Redirect } from 'react-router';
 
 class Registration extends React.Component {
   state = {
     userEmail: '',
-    userPassword: ''
+    userPassword: '',
+    isRegistration: false,
   }
 
   handleInputChange = event => {
@@ -41,7 +43,7 @@ class Registration extends React.Component {
       password: this.state.userPassword
     }
 
-    fetch('/fc-test/api/users', {
+    fetch('/api/users', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {'content-type': 'application/json'}
@@ -53,12 +55,16 @@ class Registration extends React.Component {
         return;
       }
 
-      location.href = '/fc-test/login';
+      if(result)
+        this.setState({isRegistration: true})
     })
     .catch(e => console.log(e));
   }
 
   render() {
+    if(this.state.isRegistration)
+      return <Redirect to="/login" />
+
     return (
       <div className="wrapper">
         <div className="section section__left">

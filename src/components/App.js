@@ -34,7 +34,7 @@ class App extends React.Component {
   }
 
   auth = () => {
-    fetch('/fc-test/api/auth')
+    fetch('/api/auth')
       .then(response => response.json())
       .then(result => {
         if(result.error) {
@@ -54,7 +54,7 @@ class App extends React.Component {
   logout = event => {
     event.preventDefault();
 
-    fetch('/fc-test/api/logout')
+    fetch('/api/logout')
       .then(response => response.json())
       .then(result => {
         if(result.error) {
@@ -89,16 +89,16 @@ function Nav() {
         !state.userId ? (
           <ul>
             <li>
-              <NavLink to="/fc-test/registration">Registration</NavLink>
+              <NavLink to="/registration">Registration</NavLink>
             </li>
             <li>
-              <NavLink to="/fc-test/login">Login</NavLink>
+              <NavLink to="/login">Login</NavLink>
             </li>
           </ul>
         ) : (
           <ul>
             <li>
-              <NavLink to="/fc-test">Calendar</NavLink>
+              <NavLink to="/">Calendar</NavLink>
             </li>
             <li>
               <a href="#" onClick={state.logout}>Logout</a>
@@ -124,10 +124,10 @@ function Content() {
       {app => (
         <div className="section section__right">
           <Switch>
-            <Route exact path="/fc-test" component={app.isLogin ? Calendar : () => <div>Welcome!</div>} />
-            <Route path="/fc-test/registration" component={Registration} />
-            <Route path="/fc-test/login" component={Login} />
-            <Route render={() => <div>Not Found</div>} />
+            <Route exact path="/" component={app.isLogin ? () => <Calendar app={app} /> : () => <div>Welcome!</div>} />
+            <Route path="/registration" component={Registration} />
+            <Route path="/login" component={Login} />
+            <Route render={() => <div>Page Not Found</div>} />
           </Switch>
         </div>
       )}

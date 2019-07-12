@@ -20,6 +20,7 @@ class Calendar extends React.Component {
 
       eventId: '',
       eventTitle: '',
+      eventDescription: '',
       eventResource: [],
       eventUsers: [],
       eventStart: '',
@@ -43,18 +44,25 @@ class Calendar extends React.Component {
       fetchEvents: this.fetchEvents,
       handleDeleteEvent: this.handleDeleteEvent,
       handleResize: this.handleResize,
+      eventRender: this.eventRender,
+      datesRender: this.datesRender,
     }
   }
 
   componentWillMount = () => {
-    this.fetchResources();
-    this.fetchUsers();
+    const { userGroup } = this.props.app;
+
+    if(userGroup == 1) {
+      this.fetchResources();
+      this.fetchUsers();
+    }
+
     this.fetchEvents();
   }
 
   handleEventClick = info => {
     const typeView = info.view.type;
-    if(typeView == 'resourceTimelineDay' ||
+    if(typeView == 'resourceTimelineDay'  ||
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
@@ -67,6 +75,7 @@ class Calendar extends React.Component {
       let resourceIds = [];
       const resources = info.event.getResources();
       const users = info.event.extendedProps.users || [];
+      const description = info.event.extendedProps.description || '';
 
       if(resources) {
         resources.map(resource => {
@@ -77,6 +86,7 @@ class Calendar extends React.Component {
       }
 
       editEvent.eventTitle = info.event.title;
+      editEvent.eventDescription = description;
       editEvent.eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
       editEvent.eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
       editEvent.eventUsers = users;
@@ -87,7 +97,7 @@ class Calendar extends React.Component {
 
   handleSelect = info => {
     const typeView = info.view.type;
-    if(typeView == 'resourceTimelineDay' ||
+    if(typeView == 'resourceTimelineDay'  ||
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
@@ -102,15 +112,15 @@ class Calendar extends React.Component {
         eventEnd = info.endStr.slice(0, -6);
       }
 
-      this.setState(state => {
-        return {
-          eventResource: [info.resource.id],
-          eventStart,
-          eventEnd,
-          eventUsers: [],
-          eventEditing: false,
-          eventId: ''
-        }
+      this.setState({
+        eventResource: [info.resource.id],
+        eventTitle: '',
+        eventDescription: '',
+        eventStart,
+        eventEnd,
+        eventUsers: [],
+        eventEditing: false,
+        eventId: ''
       });
     }
   }
@@ -133,14 +143,12 @@ class Calendar extends React.Component {
     else
       value = target.value;
 
-    this.setState({
-      [name]: value
-    });
+    this.setState({[name]: value});
   }
 
   handleDrop = info => {
     const typeView = info.view.type;
-    if(typeView == 'resourceTimelineDay' ||
+    if(typeView == 'resourceTimelineDay'  ||
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
@@ -150,7 +158,7 @@ class Calendar extends React.Component {
 
   handleResize = info => {
     const typeView = info.view.type;
-    if(typeView == 'resourceTimelineDay' ||
+    if(typeView == 'resourceTimelineDay'  ||
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
@@ -162,18 +170,18 @@ class Calendar extends React.Component {
         title: item.title,
         start: eventStart,
         end: eventEnd,
+        description: item.description,
       }
 
-      fetch(`/fc-test/api/events/${info.event.id}`, {
+      fetch(`/api/events/${info.event.id}`, {
         method: 'PUT',
         body: JSON.stringify(event),
         headers: {'content-type': 'application/json'}
       })
       .then(responce => responce.json())
       .then(result => {
-        if(result.error) {
+        if(result.error)
           console.log(result.error);
-        }
 
         if(result.event) {
 
@@ -185,6 +193,8 @@ class Calendar extends React.Component {
             event.end = result.event.end
           if(result.event.title)
             event.title = result.event.title
+          if(result.event.description)
+            event.description = result.event.description
 
           const events = this.state.events.map(item => {
             if(item.id === info.event.id)
@@ -210,6 +220,7 @@ class Calendar extends React.Component {
       title: item.title,
       start: eventStart,
       end: eventEnd,
+      description: item.description,
     }
 
     if(info.newResource && info.oldResource) {
@@ -219,16 +230,15 @@ class Calendar extends React.Component {
       event.resourceIds = resourceIds;
     }
 
-    fetch(`/fc-test/api/events/${info.event.id}`, {
+    fetch(`/api/events/${info.event.id}`, {
       method: 'PUT',
       body: JSON.stringify(event),
       headers: {'content-type': 'application/json'}
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error) {
+      if(result.error)
         console.log(result.error);
-      }
 
       if(result.event) {
 
@@ -240,10 +250,10 @@ class Calendar extends React.Component {
           event.end = result.event.end
         if(result.event.title)
           event.title = result.event.title
+        if(result.event.description)
+          event.description = result.event.description
         if(result.event.resourceIds)
           event.resourceIds = result.event.resourceIds
-        if(result.event.users)
-          event.users = result.event.users
 
         const events = this.state.events.map(item => {
           if(item.id === info.event.id)
@@ -271,21 +281,21 @@ class Calendar extends React.Component {
     const event = {
       resourceIds: this.state.eventResource,
       title: this.state.eventTitle,
+      description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
       users: this.state.eventUsers
     }
 
-    fetch(`/fc-test/api/events/${this.state.eventId}`, {
+    fetch(`/api/events/${this.state.eventId}`, {
       method: 'PUT',
       body: JSON.stringify(event),
       headers: {'content-type': 'application/json'}
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error) {
+      if(result.error)
         console.log(result.error);
-      }
 
       if(result.event) {
 
@@ -297,6 +307,8 @@ class Calendar extends React.Component {
           event.end = result.event.end
         if(result.event.title)
           event.title = result.event.title
+        if(result.event.description)
+          event.description = result.event.description
         if(result.event.resourceIds)
           event.resourceIds = result.event.resourceIds
         if(result.event.users)
@@ -309,17 +321,16 @@ class Calendar extends React.Component {
           return item;
         });
 
-        this.setState(state => {
-          return {
-            eventId: '',
-            eventResource: [],
-            eventUsers: [],
-            eventTitle: '',
-            eventStart: '',
-            eventEnd: '',
-            eventEditing: false,
-            events: events
-          }
+        this.setState({
+          eventId: '',
+          eventResource: [],
+          eventUsers: [],
+          eventTitle: '',
+          eventDescription: '',
+          eventStart: '',
+          eventEnd: '',
+          eventEditing: false,
+          events: events
         })
       }
     })
@@ -331,6 +342,7 @@ class Calendar extends React.Component {
     this.setState({
       eventId: '',
       eventTitle: '',
+      eventDescription: '',
       eventResource: [],
       eventUsers: [],
       eventStart: '',
@@ -345,14 +357,13 @@ class Calendar extends React.Component {
     if(!this.state.eventId)
       return;
 
-    fetch(`/fc-test/api/events/${this.state.eventId}`, {
+    fetch(`/api/events/${this.state.eventId}`, {
       method: 'DELETE'
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error) {
+      if(result.error)
         console.log(result.error);
-      }
 
       if(result.event) {
         const updatedEvents = this.state.events.filter(event => event.id !== result.event)
@@ -360,6 +371,7 @@ class Calendar extends React.Component {
         this.setState({
           eventId: '',
           eventTitle: '',
+          eventDescription: '',
           eventResource: [],
           eventUsers: [],
           eventStart: '',
@@ -383,7 +395,7 @@ class Calendar extends React.Component {
       title: this.state.sourceTitle
     }
 
-    fetch('/fc-test/api/resources', {
+    fetch('/api/resources', {
       method: 'POST',
       body: JSON.stringify(resource),
       headers: {'content-type': 'application/json'}
@@ -424,21 +436,21 @@ class Calendar extends React.Component {
     const event = {
       resourceIds: this.state.eventResource,
       title: this.state.eventTitle,
+      description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
       users: this.state.eventUsers
     }
 
-    fetch('/fc-test/api/events', {
+    fetch('/api/events', {
       method: 'POST',
       body: JSON.stringify(event),
       headers: {'content-type': 'application/json'}
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error) {
+      if(result.error)
         console.log(result.error);
-      }
 
       if(result.event) {
         this.setState(state => {
@@ -447,6 +459,7 @@ class Calendar extends React.Component {
             eventResource: [],
             eventUsers: [],
             eventTitle: '',
+            eventDescription: '',
             eventStart: '',
             eventEnd: '',
             events: [...state.events, result.event]
@@ -458,7 +471,7 @@ class Calendar extends React.Component {
   }
 
   fetchResources = () => {
-    fetch('/fc-test/api/resources')
+    fetch('/api/resources')
       .then(responce => responce.json())
       .then(result => {
         if(result.error) {
@@ -466,19 +479,14 @@ class Calendar extends React.Component {
           return;
         }
 
-        if(result) {
-          this.setState(state => {
-            return {
-              resources: result
-            }
-          })
-        }
+        if(result)
+          this.setState({resources: result})
       })
       .catch(e => console.log(e));
   }
 
   fetchUsers = () => {
-    fetch('/fc-test/api/users')
+    fetch('/api/users')
       .then(responce => responce.json())
       .then(result => {
         if(result.error) {
@@ -486,30 +494,67 @@ class Calendar extends React.Component {
           return;
         }
 
-        if(result) {
-          this.setState(state => {
-            return {
-              users: result
-            }
-          })
-        }
-        
+        if(result)
+          this.setState({users: result})
       })
       .catch(e => console.log(e));
   }
 
   fetchEvents = () => {
-    fetch('/fc-test/api/events')
+    const { userId, userGroup } = this.props.app;
+    const url = userGroup == 1 ? '/api/events' : `/api/events/user/${userId}`;
+    
+    fetch(url)
       .then(responce => responce.json())
       .then(result => {
-        if(result.error) {
+        if(result.error)
           console.log(result.error);
-        }
 
         if(result.events)
           this.setState({events: result.events})
       })
       .catch(e => console.log(e));
+  }
+
+  eventRender = info => {
+    const typeView = info.view.type;
+    if(typeView == 'timeGridWeek' ||
+       typeView == 'timeGridDay'  ||
+       typeView == 'timeGlistWeekridWeek' ||
+       typeView == 'listWeek') {
+
+      if(info.el) {
+
+        let content;
+        let description;
+
+        if(typeView == 'listWeek') {
+          content = info.el;
+          description = document.createElement('td');
+        } else {
+          content = info.el.getElementsByClassName('fc-content')[0];
+          description = document.createElement('div');
+        }
+        
+        description.className = 'fc-description';
+        description.innerHTML = info.event.extendedProps.description;
+        content.appendChild(description);
+      }
+    }
+  }
+
+  datesRender = info => {
+    const typeView = info.view.type;
+    if(typeView == 'listWeek') {
+
+      const headers = info.el.getElementsByClassName('fc-list-heading');
+
+      if(headers) {
+        for (let i = 0; i < headers.length; i++) {
+          headers[i].firstChild.colSpan = '4'
+        }
+      }
+    }
   }
 
   render() {
@@ -587,6 +632,17 @@ function EventsForm() {
                   value={context.eventTitle} 
                   onChange={context.handleInputChange} 
                 />
+              </label>
+            </p>
+            <p>
+              <label>
+                Description: <br />
+                <textarea 
+                  name="eventDescription" 
+                  value={context.eventDescription} 
+                  onChange={context.handleInputChange}
+                >
+                </textarea>
               </label>
             </p>
             <p>
@@ -693,11 +749,20 @@ function Content() {
                 listPlugin,
                 resourceTimelinePlugin
               ]}
-              header={{
-                left:   'prev,next today',
-                center: 'title',
-                right:  'resourceTimelineDay,resourceTimelineWeek,resourceTimelineMonth dayGridMonth,timeGridWeek,timeGridDay, listWeek'
-              }}
+              header={
+                app.userGroup === '1' 
+                  ? {
+                      left:   'prev,next today',
+                      center: 'title',
+                      right:  'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
+                    } 
+                  : {
+                      left:   'prev,next today',
+                      center: 'title',
+                      right:  'dayGridMonth,timeGridWeek,timeGridDay, listWeek'
+                    } 
+              }
+              defaultView={app.userGroup === '1' ? 'resourceTimelineMonth' : 'dayGridMonth'}
               businessHours={{
                 startTime: '09:00',
                 endTime: '19:00',
@@ -705,16 +770,18 @@ function Content() {
               }}
               views={{
                 resourceTimelineDay: {
-                  selectable: true,
+                  selectable: app.userGroup === '1' ? true : false,
                 },
                 resourceTimelineWeek: {
-                  selectable: true,
+                  selectable: app.userGroup === '1' ? true : false,
                 },
                 resourceTimelineMonth: {
-                  selectable: true,
+                  selectable: app.userGroup === '1' ? true : false,
                 }
               }}
-              editable={true}
+              eventRender={calendar.eventRender}
+              datesRender={calendar.datesRender}
+              editable={app.userGroup === '1' ? true : false}
               nowIndicator={true}
               eventClick={calendar.handleEventClick}
               select={calendar.handleSelect}
