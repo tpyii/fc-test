@@ -43,7 +43,7 @@ class Registration extends React.Component {
       password: this.state.userPassword
     }
 
-    fetch('/api/users', {
+    fetch('/api/auth/registration', {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {'content-type': 'application/json'}

@@ -38,7 +38,7 @@ class Login extends React.Component {
     if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
       return false;
 
-    fetch('/api/auth', {
+    fetch('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         email: this.state.userEmail,

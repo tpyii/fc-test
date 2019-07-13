@@ -54,7 +54,7 @@ class App extends React.Component {
   logout = event => {
     event.preventDefault();
 
-    fetch('/api/logout')
+    fetch('/api/auth/logout')
       .then(response => response.json())
       .then(result => {
         if(result.error) {
