@@ -532,7 +532,7 @@ class Calendar extends React.Component {
           content = info.el;
           description = document.createElement('td');
         } else {
-          content = info.el.getElementsByClassName('fc-content')[0];
+          content = info.el.querySelector('.fc-content');
           description = document.createElement('div');
         }
         
@@ -547,7 +547,7 @@ class Calendar extends React.Component {
     const typeView = info.view.type;
     if(typeView == 'listWeek') {
 
-      const headers = info.el.getElementsByClassName('fc-list-heading');
+      const headers = info.el.querySelectorAll('.fc-list-heading');
 
       if(headers) {
         for (let i = 0; i < headers.length; i++) {
