@@ -768,6 +768,7 @@ function Content() {
                 endTime: '19:00',
                 daysOfWeek: [1, 2, 3, 4, 5]
               }}
+              scrollTime={'09:00:00'}
               views={{
                 resourceTimelineDay: {
                   selectable: app.userGroup === '1' ? true : false,
