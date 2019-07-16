@@ -15,8 +15,10 @@ class Calendar extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      sourceId: '',
       sourceTitle: '',
       sourceParent: '',
+      sourceEditing: false,
 
       eventId: '',
       eventTitle: '',
@@ -37,6 +39,7 @@ class Calendar extends React.Component {
       handleDrop: this.handleDrop,
       updateEventAfterDrop: this.updateEventAfterDrop,
       updateEvent: this.updateEvent,
+      updateSource: this.updateSource,
       handleCancelEditEvent: this.handleCancelEditEvent,
       addSource: this.addSource,
       addEvent: this.addEvent,
@@ -46,6 +49,9 @@ class Calendar extends React.Component {
       handleResize: this.handleResize,
       eventRender: this.eventRender,
       datesRender: this.datesRender,
+      resourceRender: this.resourceRender,
+      handleDeleteSource: this.handleDeleteSource,
+      handleCancelEditSource: this.handleCancelEditSource,
     }
   }
 
@@ -165,7 +171,7 @@ class Calendar extends React.Component {
       const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
       const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
 
-      let item = this.state.events.filter(item => item.id === info.event.id)[0];
+      let item = this.state.events.filter(item => item.id == info.event.id)[0];
       let event = {
         title: item.title,
         start: eventStart,
@@ -197,13 +203,17 @@ class Calendar extends React.Component {
             event.description = result.event.description
 
           const events = this.state.events.map(item => {
-            if(item.id === info.event.id)
+            if(item.id == info.event.id)
               return {...item, ...event}
 
             return item;
           });
 
-          this.setState({events})
+          this.setState({
+            'eventStart': event.start,
+            'eventEnd': event.end,
+            events
+          })
         }
       })
       .catch(e => console.log(e));
@@ -215,7 +225,7 @@ class Calendar extends React.Component {
     const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
     const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
 
-    let item = this.state.events.filter(item => item.id === info.event.id)[0];
+    let item = this.state.events.filter(item => item.id == info.event.id)[0];
     let event = {
       title: item.title,
       start: eventStart,
@@ -256,13 +266,18 @@ class Calendar extends React.Component {
           event.resourceIds = result.event.resourceIds
 
         const events = this.state.events.map(item => {
-          if(item.id === info.event.id)
+          if(item.id == info.event.id)
             return {...item, ...event}
 
           return item;
         });
 
-        this.setState({events})
+        this.setState({
+          'eventStart': event.start,
+          'eventEnd': event.end,
+          'eventResource': event.resourceIds,
+          events
+        })
       }
     })
     .catch(e => console.log(e));
@@ -315,7 +330,7 @@ class Calendar extends React.Component {
           event.users = result.event.users
 
         const events = this.state.events.map(item => {
-          if(item.id === this.state.eventId)
+          if(item.id == this.state.eventId)
             return {...item, ...event}
 
           return item;
@@ -330,7 +345,7 @@ class Calendar extends React.Component {
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
-          events: events
+          events
         })
       }
     })
@@ -366,7 +381,7 @@ class Calendar extends React.Component {
         console.log(result.error);
 
       if(result.event) {
-        const updatedEvents = this.state.events.filter(event => event.id !== result.event)
+        const events = this.state.events.filter(event => event.id != result.event)
       
         this.setState({
           eventId: '',
@@ -377,11 +392,104 @@ class Calendar extends React.Component {
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
-          events: updatedEvents
+          events
         });
       }
     })
     .catch(e => console.log(e));
+  }
+
+  handleCancelEditSource = e => {
+    e.preventDefault();
+    this.setState({
+      sourceId: '',
+      sourceTitle: '',
+      sourceParent: '',
+      sourceEditing: false
+    });
+  }
+
+  updateSource = e => {
+    e.preventDefault();
+
+    if(!this.state.sourceTitle.trim().length)
+      return;
+
+    const resource = {
+      title: this.state.sourceTitle,
+      parentId: this.state.sourceParent,
+    }
+
+    fetch(`/api/resources/${this.state.sourceId}`, {
+      method: 'PUT',
+      body: JSON.stringify(resource),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+        return;
+      }
+
+      if(result) {
+        const resources = this.state.resources.map(item => {
+          if(item.id == this.state.sourceId)
+            return {...item, ...result}
+
+          return item;
+        });
+
+        this.setState({
+          sourceId: '',
+          sourceTitle: '',
+          sourceParent: '',
+          sourceEditing: false,
+          resources
+        })
+      }
+    })
+    .catch(e => console.log(e));
+  }
+  
+  handleDeleteSource = e => {
+    e.preventDefault();
+
+    if(!this.state.sourceId)
+      return;
+
+    fetch(`/api/resources/${this.state.sourceId}`, {
+      method: 'DELETE'
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error)
+        console.log(result.error);
+
+      if(result.resource) {
+        const resources = this.state.resources.filter(resource => resource.id != result.resource)
+      
+        this.setState({
+          sourceId: '',
+          sourceTitle: '',
+          sourceParent: '',
+          sourceEditing: false,
+          resources
+        });
+      }
+    })
+    .catch(e => console.log(e));
+  }
+
+  handleClickResource = (info) => {
+    const resource = this.state.resources.filter(resource => resource.id == info.resource.id)[0]
+
+    this.setState({
+      sourceId: info.resource.id,
+      sourceTitle: info.resource.title,
+      sourceParent: resource ? resource.parentId : '',
+      sourceEditing: true
+    });
   }
 
   addSource = e => {
@@ -516,6 +624,16 @@ class Calendar extends React.Component {
       .catch(e => console.log(e));
   }
 
+  resourceRender = info => {
+    const typeView = info.view.type;
+    if(typeView == 'resourceTimelineDay'  ||
+       typeView == 'resourceTimelineWeek' ||
+       typeView == 'resourceTimelineMonth') {
+
+      info.el.onclick = (e) => this.handleClickResource(info);
+    }
+  }
+
   eventRender = info => {
     const typeView = info.view.type;
     if(typeView == 'timeGridWeek' ||
@@ -573,8 +691,8 @@ function ResourcesForm() {
     <CalendarContext.Consumer>
       {context => (
         <div className="section__form">
-          <h3>Add Resource</h3>
-          <form onSubmit={context.addSource}>
+          <h3>{context.sourceEditing ? 'Edit' : 'Add'} Resource</h3>
+          <form onSubmit={context.sourceEditing ? context.updateSource : context.addSource}>
             <p>
               <label>
                 Title: <br />
@@ -608,7 +726,10 @@ function ResourcesForm() {
               </label>
             </p>
             <p>
-              <input type="submit" />
+              <input type="hidden" value={context.sourceId} />
+              <input type="submit" value={context.sourceEditing ? 'Update' : 'Add'} />
+              {context.sourceEditing && <button onClick={context.handleDeleteSource}>Delete</button>}
+              {context.sourceEditing && <button onClick={context.handleCancelEditSource}>Cancel</button>}
             </p>
           </form>
         </div>
@@ -780,6 +901,7 @@ function Content() {
                   selectable: app.userGroup === '1' ? true : false,
                 }
               }}
+              resourceRender={calendar.resourceRender}
               eventRender={calendar.eventRender}
               datesRender={calendar.datesRender}
               editable={app.userGroup === '1' ? true : false}
