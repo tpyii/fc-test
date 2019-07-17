@@ -5,6 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline';
 import interactionPlugin from '@fullcalendar/interaction';
+import bootstrapPlugin from '@fullcalendar/bootstrap';
 import ruLocale from '@fullcalendar/core/locales/ru';
 import moment from 'moment';
 import { AppContext } from './App';
@@ -869,8 +870,10 @@ function Content() {
                 timeGridPlugin,
                 interactionPlugin,
                 listPlugin,
-                resourceTimelinePlugin
+                resourceTimelinePlugin,
+                bootstrapPlugin
               ]}
+              themeSystem='bootstrap'
               header={
                 app.userGroup === '1' 
                   ? {

@@ -5,6 +5,9 @@
 @import '~@fullcalendar/list/main.css';
 @import '~@fullcalendar/timeline/main.css';
 @import '~@fullcalendar/resource-timeline/main.css';
+@import '~@fullcalendar/bootstrap/main.css';
+@import '~@fortawesome/fontawesome-free/css/all.css';
+@import '~bootstrap/scss/bootstrap';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -35,6 +38,23 @@ a {
   &.section__left {
     margin-right: 30px;
     flex: 1 0 auto;
+  }
+
+  &.section__right {
+    flex: 1 10 auto;
+  }
+
+  .section__form {
+
+    label {
+      display: block;
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+      }
+    }
   }
 }
 
