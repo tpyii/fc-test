@@ -863,6 +863,7 @@ function Content() {
           {calendar => (
             <FullCalendar 
               locale={ruLocale}
+              height='parent'
               plugins={[
                 dayGridPlugin,
                 timeGridPlugin,
