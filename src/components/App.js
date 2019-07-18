@@ -86,25 +86,21 @@ function Nav() {
   return (
     <AppContext.Consumer>
       {state => (
-        !state.userId ? (
-          <ul>
-            <li>
-              <NavLink to="/registration">Registration</NavLink>
-            </li>
-            <li>
-              <NavLink to="/login">Login</NavLink>
-            </li>
-          </ul>
-        ) : (
-          <ul>
-            <li>
-              <NavLink to="/">Calendar</NavLink>
-            </li>
-            <li>
-              <a href="#" onClick={state.logout}>Logout</a>
-            </li>
-          </ul>
-        )
+        <div className="list-group">
+          {
+            !state.userId ? (
+              <React.Fragment>
+                <NavLink to="/signup" className="list-group-item list-group-item-action">Sign up</NavLink>
+                <NavLink to="/login" className="list-group-item list-group-item-action">Log in</NavLink>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <NavLink to="/" className="list-group-item list-group-item-action">Calendar</NavLink>
+                <a href="#" className="list-group-item list-group-item-action" onClick={state.logout}>Log out</a>
+              </React.Fragment>
+            )
+          }
+        </div>
       )}
     </AppContext.Consumer>
   )
@@ -118,16 +114,28 @@ function Sidebar() {
   )
 }
 
+function Welcome() {
+  return (
+    <div className="alert">
+      <h1 className="alert-heading">Hello, Guest!</h1>
+      <p className="lead">This is a test application for organizing your schedule, planning projects and vacations.</p>
+      <hr className="my-4" />
+      <p>To get started, please sign up.</p>
+      <NavLink to="/signup" className="btn btn-primary btn-lg">Sign up</NavLink>
+    </div>
+  )
+}
+
 function Content() {
   return (
     <AppContext.Consumer>
       {app => (
         <div className="section section__right">
           <Switch>
-            <Route exact path="/" component={app.isLogin ? () => <Calendar app={app} /> : () => <div>Welcome!</div>} />
-            <Route path="/registration" component={Registration} />
+            <Route exact path="/" component={app.isLogin ? () => <Calendar app={app} /> : () => <Welcome />} />
+            <Route path="/signup" component={Registration} />
             <Route path="/login" component={Login} />
-            <Route render={() => <div>Page Not Found</div>} />
+            <Route render={() => <div className="section__wrapper">Page Not Found</div>} />
           </Switch>
         </div>
       )}

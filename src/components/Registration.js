@@ -68,36 +68,39 @@ class Registration extends React.Component {
     return (
       <div className="wrapper">
         <div className="section section__left">
-          <div className="section__form">
+          <form onSubmit={this.addUser} className="dropdown-menu px-4 py-3">
             <h3>Registration</h3>
-            <form onSubmit={this.addUser}>
-              <p>
-                <label>
-                  Email: <br />
-                  <input 
-                    type="email"
-                    name="userEmail" 
-                    value={this.state.userEmail} 
-                    onChange={this.handleInputChange} 
-                  />
-                </label>
-              </p>
-              <p>
-                <label>
-                  Password: <br />
-                  <input 
-                    type="password"
-                    name="userPassword" 
-                    value={this.state.userPassword}  
-                    onChange={this.handleInputChange}
-                  />
-                </label>
-              </p>
-              <p>
-                <input type="submit" value="Registration" />
-              </p>
-            </form>
-          </div>
+            <div className="form-group">
+              <label htmlFor="userEmail">Email address</label>
+              <input 
+                type="email"
+                className="form-control"
+                id="userEmail"
+                placeholder="email@example.com"
+                name="userEmail"
+                value={this.state.userEmail}
+                onChange={this.handleInputChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input 
+                type="password" 
+                className="form-control" 
+                id="password" 
+                placeholder="Password"
+                name="userPassword" 
+                value={this.state.userPassword}  
+                onChange={this.handleInputChange}
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+            >
+              Sign up
+            </button>
+          </form>
         </div>
         <div className="section section__right">
         </div>

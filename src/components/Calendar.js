@@ -691,28 +691,30 @@ function ResourcesForm() {
   return (
     <CalendarContext.Consumer>
       {context => (
-        <div className="section__form">
-          <h3>{context.sourceEditing ? 'Edit' : 'Add'} Resource</h3>
+        <div className="form-group">
           <form onSubmit={context.sourceEditing ? context.updateSource : context.addSource}>
-            <p>
-              <label>
-                Title: <br />
-                <input 
-                  name="sourceTitle" 
-                  value={context.sourceTitle} 
-                  onChange={context.handleInputChange} 
-                />
-              </label>
-            </p>
-            <p>
-              <label>
-                Parent: <br />
-                <select 
-                  name="sourceParent" 
-                  value={context.sourceParent}  
-                  onChange={context.handleInputChange}
-                >
-                  <option value="">-- select parent resource --</option>
+            <h3>{context.sourceEditing ? 'Edit' : 'Add'} Resource</h3>
+            <div className="form-group">
+              <label htmlFor="sourceTitle">Title</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="sourceTitle" 
+                name="sourceTitle" 
+                value={context.sourceTitle} 
+                onChange={context.handleInputChange} 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="sourceParent">Parent</label>
+              <select 
+                className="form-control" 
+                id="sourceParent"
+                name="sourceParent" 
+                value={context.sourceParent}  
+                onChange={context.handleInputChange}
+              >
+                <option value="">-- select parent resource --</option>
                   {
                     context.resources.map(resource => (
                       <option 
@@ -723,15 +725,14 @@ function ResourcesForm() {
                       </option>
                     ))
                   }
-                </select>
-              </label>
-            </p>
-            <p>
-              <input type="hidden" value={context.sourceId} />
-              <input type="submit" value={context.sourceEditing ? 'Update' : 'Add'} />
-              {context.sourceEditing && <button onClick={context.handleDeleteSource}>Delete</button>}
-              {context.sourceEditing && <button onClick={context.handleCancelEditSource}>Cancel</button>}
-            </p>
+              </select>
+            </div>
+            <div className="btn-group">
+              <button type="submit" className="btn btn-primary">{context.sourceEditing ? 'Update' : 'Add'}</button>
+              {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteSource}>Delete</button>}
+              {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditSource}>Cancel</button>}
+            </div>
+            <input type="hidden" value={context.sourceId} />
           </form>
         </div>
       )}
@@ -743,102 +744,107 @@ function EventsForm() {
   return (
     <CalendarContext.Consumer>
       {context => (
-        <div className="section__form">
-          <h3>{context.eventEditing ? 'Edit' : 'Add'} Event</h3>
+        <div className="form-group">
           <form onSubmit={context.eventEditing ? context.updateEvent : context.addEvent}>
-            <p>
-              <label>
-                Title: <br />
-                <input 
-                  name="eventTitle" 
-                  value={context.eventTitle} 
-                  onChange={context.handleInputChange} 
-                />
-              </label>
-            </p>
-            <p>
-              <label>
-                Description: <br />
-                <textarea 
-                  name="eventDescription" 
-                  value={context.eventDescription} 
-                  onChange={context.handleInputChange}
-                >
-                </textarea>
-              </label>
-            </p>
-            <p>
-              <label>
-                Resource: <br />
-                <select 
-                  multiple={true}
-                  name="eventResource" 
-                  value={context.eventResource}  
-                  onChange={context.handleInputChange}
-                >
-                  {
-                    context.resources.map(resource => (
-                      <option 
-                        key={resource.id} 
-                        value={resource.id}
-                      >
-                        {resource.title}
-                      </option>
-                    ))
-                  }
-                </select>
-              </label>
-            </p>
-            <p>
-              <label>
-                Users: <br />
-                <select 
-                  multiple={true}
-                  name="eventUsers" 
-                  value={context.eventUsers}  
-                  onChange={context.handleInputChange}
-                >
-                  {
-                    context.users.map(user => (
-                      <option 
-                        key={user.id} 
-                        value={user.id}
-                      >
-                        {user.email}
-                      </option>
-                    ))
-                  }
-                </select>
-              </label>
-            </p>
-            <p>
-              <label>
-                Start: <br />
-                <input 
-                  type="datetime-local"
-                  name="eventStart" 
-                  value={context.eventStart} 
-                  onChange={context.handleInputChange} 
-                />
-              </label>
-            </p>
-            <p>
-              <label>
-                End: <br />
-                <input 
-                  type="datetime-local"
-                  name="eventEnd" 
-                  value={context.eventEnd} 
-                  onChange={context.handleInputChange} 
-                />
-              </label>
-            </p>
-            <p>
-              <input type="hidden" value={context.eventId} />
-              <input type="submit" value={context.eventEditing ? 'Update' : 'Add'} />
-              {context.eventEditing && <button onClick={context.handleDeleteEvent}>Delete</button>}
-              {context.eventEditing && <button onClick={context.handleCancelEditEvent}>Cancel</button>}
-            </p>
+            <h3>{context.eventEditing ? 'Edit' : 'Add'} Event</h3>
+            <div className="form-group">
+              <label htmlFor="eventTitle">Title</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="eventTitle" 
+                name="eventTitle" 
+                value={context.eventTitle} 
+                onChange={context.handleInputChange} 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventDescription">Description</label>
+              <textarea 
+                className="form-control" 
+                id="eventDescription" 
+                name="eventDescription" 
+                value={context.eventDescription} 
+                onChange={context.handleInputChange}
+                rows="3"
+              >
+              </textarea>
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventResource">Resource</label>
+              <select 
+                className="form-control" 
+                id="eventResource"
+                multiple={true}
+                name="eventResource" 
+                value={context.eventResource}  
+                onChange={context.handleInputChange}
+              >
+                {
+                  context.resources.map(resource => (
+                    <option 
+                      key={resource.id} 
+                      value={resource.id}
+                    >
+                      {resource.title}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="eventUsers">Users</label>
+              <select 
+                className="form-control" 
+                id="eventUsers"
+                multiple={true}
+                name="eventUsers" 
+                value={context.eventUsers}  
+                onChange={context.handleInputChange}
+              >
+                {
+                  context.users.map(user => (
+                    <option 
+                      key={user.id} 
+                      value={user.id}
+                    >
+                      {user.email}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventStart">Start</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="eventStart" 
+                type="datetime-local"
+                name="eventStart" 
+                value={context.eventStart} 
+                onChange={context.handleInputChange} 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventEnd">End</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="eventEnd" 
+                type="datetime-local"
+                name="eventEnd" 
+                value={context.eventEnd} 
+                onChange={context.handleInputChange} 
+              />
+            </div>
+            <div className="btn-group">
+              <button type="submit" className="btn btn-primary">{context.eventEditing ? 'Update' : 'Add'}</button>
+              {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteEvent}>Delete</button>}
+              {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditEvent}>Cancel</button>}
+            </div>
+            <input type="hidden" value={context.eventId} />
           </form>
         </div>
       )}
@@ -862,61 +868,63 @@ function Content() {
       {app => (
         <CalendarContext.Consumer>
           {calendar => (
-            <FullCalendar 
-              locale={ruLocale}
-              height='parent'
-              plugins={[
-                dayGridPlugin,
-                timeGridPlugin,
-                interactionPlugin,
-                listPlugin,
-                resourceTimelinePlugin,
-                bootstrapPlugin
-              ]}
-              themeSystem='bootstrap'
-              header={
-                app.userGroup === '1' 
-                  ? {
-                      left:   'prev,next today',
-                      center: 'title',
-                      right:  'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
-                    } 
-                  : {
-                      left:   'prev,next today',
-                      center: 'title',
-                      right:  'dayGridMonth,timeGridWeek,timeGridDay, listWeek'
-                    } 
-              }
-              defaultView={app.userGroup === '1' ? 'resourceTimelineMonth' : 'dayGridMonth'}
-              businessHours={{
-                startTime: '09:00',
-                endTime: '19:00',
-                daysOfWeek: [1, 2, 3, 4, 5]
-              }}
-              scrollTime={'09:00:00'}
-              views={{
-                resourceTimelineDay: {
-                  selectable: app.userGroup === '1' ? true : false,
-                },
-                resourceTimelineWeek: {
-                  selectable: app.userGroup === '1' ? true : false,
-                },
-                resourceTimelineMonth: {
-                  selectable: app.userGroup === '1' ? true : false,
+            <div className="section__wrapper">
+              <FullCalendar 
+                locale={ruLocale}
+                height='parent'
+                plugins={[
+                  dayGridPlugin,
+                  timeGridPlugin,
+                  interactionPlugin,
+                  listPlugin,
+                  resourceTimelinePlugin,
+                  bootstrapPlugin
+                ]}
+                themeSystem='bootstrap'
+                header={
+                  app.userGroup === '1' 
+                    ? {
+                        left:   'prev,next today',
+                        center: 'title',
+                        right:  'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
+                      } 
+                    : {
+                        left:   'prev,next today',
+                        center: 'title',
+                        right:  'dayGridMonth,timeGridWeek,timeGridDay, listWeek'
+                      } 
                 }
-              }}
-              resourceRender={calendar.resourceRender}
-              eventRender={calendar.eventRender}
-              datesRender={calendar.datesRender}
-              editable={app.userGroup === '1' ? true : false}
-              nowIndicator={true}
-              eventClick={calendar.handleEventClick}
-              select={calendar.handleSelect}
-              eventDrop={calendar.handleDrop}
-              eventResize={calendar.handleResize}
-              resources={calendar.resources}
-              events={calendar.events}
-            />
+                defaultView={app.userGroup === '1' ? 'resourceTimelineMonth' : 'dayGridMonth'}
+                businessHours={{
+                  startTime: '09:00',
+                  endTime: '19:00',
+                  daysOfWeek: [1, 2, 3, 4, 5]
+                }}
+                scrollTime={'09:00:00'}
+                views={{
+                  resourceTimelineDay: {
+                    selectable: app.userGroup === '1' ? true : false,
+                  },
+                  resourceTimelineWeek: {
+                    selectable: app.userGroup === '1' ? true : false,
+                  },
+                  resourceTimelineMonth: {
+                    selectable: app.userGroup === '1' ? true : false,
+                  }
+                }}
+                resourceRender={calendar.resourceRender}
+                eventRender={calendar.eventRender}
+                datesRender={calendar.datesRender}
+                editable={app.userGroup === '1' ? true : false}
+                nowIndicator={true}
+                eventClick={calendar.handleEventClick}
+                select={calendar.handleSelect}
+                eventDrop={calendar.handleDrop}
+                eventResize={calendar.handleResize}
+                resources={calendar.resources}
+                events={calendar.events}
+              />
+            </div>
           )}
         </CalendarContext.Consumer>
         )}

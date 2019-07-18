@@ -36,7 +36,7 @@ a {
   overflow-y: auto;
   
   &.section__left {
-    margin-right: 30px;
+    padding: 15px;
     flex: 0 0 auto;
   }
 
@@ -44,17 +44,17 @@ a {
     flex: 1 1 auto;
   }
 
-  .section__form {
+  .section__wrapper {
+    padding: 15px;
+    height: calc(100% - 30px);
+  }
+}
 
-    label {
-      display: block;
+form {
 
-      input,
-      select,
-      textarea {
-        width: 100%;
-      }
-    }
+  &.dropdown-menu {
+    position: static;
+    display: block;
   }
 }
 

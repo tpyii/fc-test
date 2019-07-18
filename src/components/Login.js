@@ -70,37 +70,40 @@ class Login extends React.Component {
 
               ) : (
 
-                <div className="section__form">
+                <form onSubmit={e => this.login(e, app.toggleLogin)} className="dropdown-menu px-4 py-3">
                   <h3>Login</h3>
-                  <form onSubmit={e => this.login(e, app.toggleLogin)}>
-                    <p>
-                      <label>
-                        Email: <br />
-                        <input 
-                          type="email"
-                          name="userEmail" 
-                          value={this.state.userEmail} 
-                          onChange={this.handleInputChange} 
-                        />
-                      </label>
-                    </p>
-                    <p>
-                      <label>
-                        Password: <br />
-                        <input 
-                          type="password"
-                          name="userPassword" 
-                          value={this.state.userPassword}  
-                          onChange={this.handleInputChange}
-                        />
-                      </label>
-                    </p>
-                    <p>
-                      <input type="submit" value="Login" />
-                    </p>
-                  </form>
-                </div>
 
+                  <div className="form-group">
+                    <label htmlFor="userEmail">Email address</label>
+                    <input 
+                      type="email"
+                      className="form-control"
+                      id="userEmail"
+                      placeholder="email@example.com"
+                      name="userEmail"
+                      value={this.state.userEmail}
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      id="password" 
+                      placeholder="Password"
+                      name="userPassword" 
+                      value={this.state.userPassword}  
+                      onChange={this.handleInputChange}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                  >
+                    Log in
+                  </button>
+                </form>
               )
             )}
           </AppContext.Consumer>
