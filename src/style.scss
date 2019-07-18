@@ -37,11 +37,11 @@ a {
   
   &.section__left {
     margin-right: 30px;
-    flex: 1 0 auto;
+    flex: 0 0 auto;
   }
 
   &.section__right {
-    flex: 1 10 auto;
+    flex: 1 1 auto;
   }
 
   .section__form {
