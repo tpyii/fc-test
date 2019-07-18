@@ -888,6 +888,7 @@ function Content() {
           {calendar => (
             <div className="section__wrapper">
               <FullCalendar 
+                schedulerLicenseKey='GPL-My-Project-Is-Open-Source'
                 locale={ruLocale}
                 height='parent'
                 plugins={[
