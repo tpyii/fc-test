@@ -691,9 +691,9 @@ function ResourcesForm() {
   return (
     <CalendarContext.Consumer>
       {context => (
-        <div className="form-group">
-          <form onSubmit={context.sourceEditing ? context.updateSource : context.addSource}>
-            <h3>{context.sourceEditing ? 'Edit' : 'Add'} Resource</h3>
+        <form className="form-group card" onSubmit={context.sourceEditing ? context.updateSource : context.addSource}>
+          <h5 className="card-header bg-white">{context.sourceEditing ? 'Edit' : 'Add'} Resource</h5>
+          <div className="card-body">
             <div className="form-group">
               <label htmlFor="sourceTitle">Title</label>
               <input 
@@ -727,6 +727,9 @@ function ResourcesForm() {
                   }
               </select>
             </div>
+            <input type="hidden" value={context.sourceId} />
+          </div>
+          <div className="card-footer bg-white">
             <div className="btn-group">
               <button 
                 type="submit" 
@@ -738,9 +741,8 @@ function ResourcesForm() {
               {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteSource}>Delete</button>}
               {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditSource}>Cancel</button>}
             </div>
-            <input type="hidden" value={context.sourceId} />
-          </form>
-        </div>
+          </div>
+        </form>
       )}
     </CalendarContext.Consumer>
   )
@@ -750,9 +752,9 @@ function EventsForm() {
   return (
     <CalendarContext.Consumer>
       {context => (
-        <div className="form-group">
-          <form onSubmit={context.eventEditing ? context.updateEvent : context.addEvent}>
-            <h3>{context.eventEditing ? 'Edit' : 'Add'} Event</h3>
+        <form className="card" onSubmit={context.eventEditing ? context.updateEvent : context.addEvent}>
+          <h5 className="card-header bg-white">{context.eventEditing ? 'Edit' : 'Add'} Event</h5>
+          <div className="card-body">
             <div className="form-group">
               <label htmlFor="eventTitle">Title</label>
               <input 
@@ -798,7 +800,6 @@ function EventsForm() {
                 }
               </select>
             </div>
-
             <div className="form-group">
               <label htmlFor="eventUsers">Users</label>
               <select 
@@ -845,6 +846,9 @@ function EventsForm() {
                 onChange={context.handleInputChange} 
               />
             </div>
+            <input type="hidden" value={context.eventId} />
+          </div>
+          <div className="card-footer bg-white">
             <div className="btn-group">
               <button 
                 type="submit" 
@@ -862,9 +866,8 @@ function EventsForm() {
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteEvent}>Delete</button>}
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditEvent}>Cancel</button>}
             </div>
-            <input type="hidden" value={context.eventId} />
-          </form>
-        </div>
+          </div>
+        </form>
       )}
     </CalendarContext.Consumer>
   )

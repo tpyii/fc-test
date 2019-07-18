@@ -70,39 +70,42 @@ class Login extends React.Component {
 
               ) : (
 
-                <form onSubmit={e => this.login(e, app.toggleLogin)} className="dropdown-menu px-4 py-3">
-                  <h3>Login</h3>
-
-                  <div className="form-group">
-                    <label htmlFor="userEmail">Email address</label>
-                    <input 
-                      type="email"
-                      className="form-control"
-                      id="userEmail"
-                      placeholder="email@example.com"
-                      name="userEmail"
-                      value={this.state.userEmail}
-                      onChange={this.handleInputChange}
-                    />
+                <form className="card" onSubmit={e => this.login(e, app.toggleLogin)}>
+                  <h5 className="card-header bg-white">Login</h5>
+                  <div className="card-body">
+                    <div className="form-group">
+                      <label htmlFor="userEmail">Email address</label>
+                      <input 
+                        type="email"
+                        className="form-control"
+                        id="userEmail"
+                        placeholder="email@example.com"
+                        name="userEmail"
+                        value={this.state.userEmail}
+                        onChange={this.handleInputChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="password">Password</label>
+                      <input 
+                        type="password" 
+                        className="form-control" 
+                        id="password" 
+                        placeholder="Password"
+                        name="userPassword" 
+                        value={this.state.userPassword}  
+                        onChange={this.handleInputChange}
+                      />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input 
-                      type="password" 
-                      className="form-control" 
-                      id="password" 
-                      placeholder="Password"
-                      name="userPassword" 
-                      value={this.state.userPassword}  
-                      onChange={this.handleInputChange}
-                    />
+                  <div className="card-footer bg-white">
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary" 
+                    >
+                      Log in
+                    </button>
                   </div>
-                  <button 
-                    type="submit" 
-                    className="btn btn-primary" 
-                  >
-                    Log in
-                  </button>
                 </form>
               )
             )}

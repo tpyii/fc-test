@@ -68,38 +68,42 @@ class Registration extends React.Component {
     return (
       <div className="wrapper">
         <div className="section section__left">
-          <form onSubmit={this.addUser} className="dropdown-menu px-4 py-3">
-            <h3>Registration</h3>
-            <div className="form-group">
-              <label htmlFor="userEmail">Email address</label>
-              <input 
-                type="email"
-                className="form-control"
-                id="userEmail"
-                placeholder="email@example.com"
-                name="userEmail"
-                value={this.state.userEmail}
-                onChange={this.handleInputChange}
-              />
+          <form className="card" onSubmit={this.addUser}>
+            <h5 className="card-header bg-white">Registration</h5>
+            <div className="card-body">
+              <div className="form-group">
+                <label htmlFor="userEmail">Email address</label>
+                <input 
+                  type="email"
+                  className="form-control"
+                  id="userEmail"
+                  placeholder="email@example.com"
+                  name="userEmail"
+                  value={this.state.userEmail}
+                  onChange={this.handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input 
+                  type="password" 
+                  className="form-control" 
+                  id="password" 
+                  placeholder="Password"
+                  name="userPassword" 
+                  value={this.state.userPassword}  
+                  onChange={this.handleInputChange}
+                />
+              </div>
             </div>
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input 
-                type="password" 
-                className="form-control" 
-                id="password" 
-                placeholder="Password"
-                name="userPassword" 
-                value={this.state.userPassword}  
-                onChange={this.handleInputChange}
-              />
+            <div className="card-footer bg-white">
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+              >
+                Sign up
+              </button>
             </div>
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-            >
-              Sign up
-            </button>
           </form>
         </div>
         <div className="section section__right">
