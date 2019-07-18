@@ -728,7 +728,13 @@ function ResourcesForm() {
               </select>
             </div>
             <div className="btn-group">
-              <button type="submit" className="btn btn-primary">{context.sourceEditing ? 'Update' : 'Add'}</button>
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={!context.sourceTitle.trim().length}
+              >
+                {context.sourceEditing ? 'Update' : 'Add'}
+              </button>
               {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteSource}>Delete</button>}
               {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditSource}>Cancel</button>}
             </div>
@@ -840,7 +846,19 @@ function EventsForm() {
               />
             </div>
             <div className="btn-group">
-              <button type="submit" className="btn btn-primary">{context.eventEditing ? 'Update' : 'Add'}</button>
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={
+                  !context.eventTitle.trim().length || 
+                  !context.eventResource.length || 
+                  !context.eventUsers.length || 
+                  !context.eventStart.trim().length || 
+                  !context.eventEnd.trim().length
+                }
+              >
+                {context.eventEditing ? 'Update' : 'Add'}
+              </button>
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteEvent}>Delete</button>}
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditEvent}>Cancel</button>}
             </div>
