@@ -58,6 +58,15 @@ form {
   }
 }
 
-.fc-body .fc-resource-area tr:hover {
-  cursor: pointer;
+.fc-body .fc-resource-area tr {
+
+  &:hover,
+  &:focus {
+    cursor: pointer;
+    background-color: #f8f9fa;
+  }
+
+  &:active {
+    background: #e9ecef;
+  }
 }
