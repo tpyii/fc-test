@@ -16,8 +16,13 @@ class Calendar extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      groupId: '',
+      groupTitle: '',
+      groupEditing: false,
+
       sourceId: '',
       sourceTitle: '',
+      sourceGroup: '',
       sourceParent: '',
       sourceEditing: false,
 
@@ -31,6 +36,7 @@ class Calendar extends React.Component {
       eventEditing: false,
 
       users: [],
+      groups: [],
       resources: [],
       events: [],
 
@@ -53,6 +59,11 @@ class Calendar extends React.Component {
       resourceRender: this.resourceRender,
       handleDeleteSource: this.handleDeleteSource,
       handleCancelEditSource: this.handleCancelEditSource,
+      fetchGroups: this.fetchGroups,
+      addGroup: this.addGroup,
+      updateGroup: this.updateGroup,
+      handleDeleteGroup: this.handleDeleteGroup,
+      handleCancelEditGroup: this.handleCancelEditGroup,
     }
   }
 
@@ -60,6 +71,7 @@ class Calendar extends React.Component {
     const { userGroup } = this.props.app;
 
     if(userGroup == 1) {
+      this.fetchGroups();
       this.fetchResources();
       this.fetchUsers();
     }
@@ -405,19 +417,25 @@ class Calendar extends React.Component {
     this.setState({
       sourceId: '',
       sourceTitle: '',
+      sourceGroup: '',
       sourceParent: '',
-      sourceEditing: false
+      sourceEditing: false,
+      groupId: '',
+      groupTitle: '',
+      groupEditing: false,
     });
   }
 
   updateSource = e => {
     e.preventDefault();
 
-    if(!this.state.sourceTitle.trim().length)
+    if(!this.state.sourceTitle.trim().length ||
+       !this.state.sourceGroup.length)
       return;
 
     const resource = {
       title: this.state.sourceTitle,
+      groupId: this.state.sourceGroup,
       parentId: this.state.sourceParent,
     }
 
@@ -444,6 +462,7 @@ class Calendar extends React.Component {
         this.setState({
           sourceId: '',
           sourceTitle: '',
+          sourceGroup: '',
           sourceParent: '',
           sourceEditing: false,
           resources
@@ -473,8 +492,12 @@ class Calendar extends React.Component {
         this.setState({
           sourceId: '',
           sourceTitle: '',
+          sourceGroup: '',
           sourceParent: '',
           sourceEditing: false,
+          groupId: '',
+          groupTitle: '',
+          groupEditing: false,
           resources
         });
       }
@@ -482,24 +505,160 @@ class Calendar extends React.Component {
     .catch(e => console.log(e));
   }
 
-  handleClickResource = (info) => {
+  handleClickResource = info => {
     const resource = this.state.resources.filter(resource => resource.id == info.resource.id)[0]
 
     this.setState({
       sourceId: info.resource.id,
       sourceTitle: info.resource.title,
+      sourceGroup: resource.groupId ? resource.groupId : '',
       sourceParent: resource ? resource.parentId : '',
-      sourceEditing: true
+      sourceEditing: true,
+      groupId: resource.groupId ? resource.groupId : '',
+      groupTitle: resource.groupTitle ? resource.groupTitle : '',
+      groupEditing: resource.groupId ? true : false,
     });
+  }
+
+  updateGroup = e => {
+    e.preventDefault();
+
+    if(!this.state.groupTitle.trim().length)
+      return;
+
+    const group = {
+      title: this.state.groupTitle,
+    }
+
+    fetch(`/api/groups/${this.state.groupId}`, {
+      method: 'PUT',
+      body: JSON.stringify(group),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+        return;
+      }
+
+      if(result) {
+        const groups = this.state.groups.map(item => {
+          if(item.id == this.state.groupId)
+            return {...item, ...result}
+
+          return item;
+        });
+
+        const resources = this.state.resources.map(resource => {
+          if(resource.groupId == result.id)
+            return {...resource, groupTitle: result.title}
+
+          return resource;
+        })
+
+        this.setState({
+          groupId: '',
+          groupTitle: '',
+          groupEditing: false,
+          groups,
+          resources
+        })
+      }
+    })
+    .catch(e => console.log(e));
+  }
+
+  handleDeleteGroup = e => {
+    e.preventDefault();
+
+    if(!this.state.groupId)
+      return;
+
+    fetch(`/api/groups/${this.state.groupId}`, {
+      method: 'DELETE'
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error)
+        console.log(result.error);
+
+      if(result.group) {
+        const groups = this.state.groups.filter(group => group.id != result.group)
+        const resources = this.state.resources.map(resource => {
+          if(resource.groupId == result.group)
+            return {...resource, groupId: null, groupTitle: null}
+
+          return resource;
+        })
+      
+        this.setState({
+          groupId: '',
+          groupTitle: '',
+          groupEditing: false,
+          groups,
+          resources
+        });
+      }
+    })
+    .catch(e => console.log(e));
+  }
+
+  handleCancelEditGroup = e => {
+    e.preventDefault();
+    this.setState({
+      groupId: '',
+      groupTitle: '',
+      groupEditing: false,
+    });
+  }
+
+  addGroup = e => {
+    e.preventDefault();
+
+    if(!this.state.groupTitle.trim().length)
+      return;
+
+    const group = {
+      title: this.state.groupTitle
+    }
+
+    fetch('/api/groups', {
+      method: 'POST',
+      body: JSON.stringify(group),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+        return;
+      }
+
+      if(result) {
+        this.setState(state => {
+          return {
+            groups: [...state.groups, result]
+          }
+        })
+      }
+    })
+    .catch(e => console.log(e));
+
+    this.setState({
+      groupTitle: '',
+    })
   }
 
   addSource = e => {
     e.preventDefault();
 
-    if(!this.state.sourceTitle.trim().length)
+    if(!this.state.sourceTitle.trim().length ||
+       !this.state.sourceGroup.length)
       return;
 
     const resource = {
+      groupId: this.state.sourceGroup,
       parentId: this.state.sourceParent,
       title: this.state.sourceTitle
     }
@@ -527,6 +686,7 @@ class Calendar extends React.Component {
     .catch(e => console.log(e));
 
     this.setState({
+      sourceGroup: '',
       sourceParent: '',
       sourceTitle: '',
     })
@@ -577,6 +737,21 @@ class Calendar extends React.Component {
       }
     })
     .catch(e => console.log(e));
+  }
+
+  fetchGroups = () => {
+    fetch('/api/groups')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error) {
+          console.log(result.error);
+          return;
+        }
+
+        if(result)
+          this.setState({groups: result})
+      })
+      .catch(e => console.log(e));
   }
 
   fetchResources = () => {
@@ -687,6 +862,45 @@ class Calendar extends React.Component {
 
 Calendar.contextType = CalendarContext;
 
+function GroupsForm() {
+  return (
+    <CalendarContext.Consumer>
+      {context => (
+        <form className="form-group card" onSubmit={context.groupEditing ? context.updateGroup : context.addGroup}>
+          <h5 className="card-header bg-white">{context.groupEditing ? 'Edit' : 'Add'} Group</h5>
+          <div className="card-body">
+            <div className="form-group">
+              <label htmlFor="groupTitle">Title</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="groupTitle" 
+                name="groupTitle" 
+                value={context.groupTitle} 
+                onChange={context.handleInputChange} 
+              />
+            </div>
+            <input type="hidden" value={context.groupId} />
+          </div>
+          <div className="card-footer bg-white">
+            <div className="btn-group">
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                disabled={!context.groupTitle.trim().length}
+              >
+                {context.groupEditing ? 'Update' : 'Add'}
+              </button>
+              {context.groupEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteGroup}>Delete</button>}
+              {context.groupEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditGroup}>Cancel</button>}
+            </div>
+          </div>
+        </form>
+      )}
+    </CalendarContext.Consumer>
+  )
+}
+
 function ResourcesForm() {
   return (
     <CalendarContext.Consumer>
@@ -704,6 +918,28 @@ function ResourcesForm() {
                 value={context.sourceTitle} 
                 onChange={context.handleInputChange} 
               />
+            </div>
+            <div className="form-group">
+              <label htmlFor="sourceGroup">Group</label>
+              <select 
+                className="form-control" 
+                id="sourceGroup"
+                name="sourceGroup" 
+                value={context.sourceGroup}  
+                onChange={context.handleInputChange}
+              >
+                <option value="">-- select group --</option>
+                  {
+                    context.groups.map(group => (
+                      <option 
+                        key={group.id} 
+                        value={group.id}
+                      >
+                        {group.title}
+                      </option>
+                    ))
+                  }
+              </select>
             </div>
             <div className="form-group">
               <label htmlFor="sourceParent">Parent</label>
@@ -734,7 +970,10 @@ function ResourcesForm() {
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                disabled={!context.sourceTitle.trim().length}
+                disabled={
+                  !context.sourceTitle.trim().length ||
+                  !context.sourceGroup.length
+                }
               >
                 {context.sourceEditing ? 'Update' : 'Add'}
               </button>
@@ -876,6 +1115,7 @@ function EventsForm() {
 function Sidebar() {
   return (
     <div className="section section__left">
+      <GroupsForm />
       <ResourcesForm />
       <EventsForm />
     </div>
@@ -934,6 +1174,7 @@ function Content() {
                     selectable: app.userGroup === '1' ? true : false,
                   }
                 }}
+                resourceGroupField='groupTitle'
                 resourceRender={calendar.resourceRender}
                 eventRender={calendar.eventRender}
                 datesRender={calendar.datesRender}
