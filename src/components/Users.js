@@ -11,16 +11,7 @@ class Users extends React.Component {
       userRole: '',
       userEditing: false,
 
-      roles: [
-        {
-          id: 1,
-          title: 'Administrator'
-        },
-        {
-          id: 2,
-          title: 'User'
-        }
-      ],
+      roles: [],
 
       handleInputChange: this.handleInputChange,
       updateUser: this.updateUser,
@@ -32,6 +23,7 @@ class Users extends React.Component {
 
   componentWillMount = () => {
     this.fetchUsers();
+    this.fetchRoles();
   }
 
   handleInputChange = event => {
@@ -159,6 +151,19 @@ class Users extends React.Component {
 
         if(result)
           this.setState({users: result})
+      })
+      .catch(e => console.log(e));
+  }
+
+  fetchRoles = () => {    
+    fetch('/api/roles')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error)
+          console.log(result.error);
+
+        if(result)
+          this.setState({roles: result})
       })
       .catch(e => console.log(e));
   }
