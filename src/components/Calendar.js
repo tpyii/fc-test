@@ -822,31 +822,15 @@ class Calendar extends React.Component {
         let content;
         let description;
 
-        if(typeView == 'listWeek') {
-          content = info.el;
-          description = document.createElement('td');
-        } else {
+        if(typeView == 'listWeek')
+          content = info.el.querySelector('.fc-list-item-title');
+        else
           content = info.el.querySelector('.fc-content');
-          description = document.createElement('div');
-        }
-        
+
+        description = document.createElement('div');
         description.className = 'fc-description';
         description.innerHTML = info.event.extendedProps.description;
         content.appendChild(description);
-      }
-    }
-  }
-
-  datesRender = info => {
-    const typeView = info.view.type;
-    if(typeView == 'listWeek') {
-
-      const headers = info.el.querySelectorAll('.fc-list-heading');
-
-      if(headers) {
-        for (let i = 0; i < headers.length; i++) {
-          headers[i].firstChild.colSpan = '4'
-        }
       }
     }
   }
