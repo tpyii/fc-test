@@ -3,6 +3,7 @@ import { Route, Switch, NavLink } from "react-router-dom";
 import Registration from './Registration';
 import Login from './Login';
 import Calendar from './Calendar';
+import Users from './Users';
 
 export const AppContext = React.createContext();
 
@@ -95,7 +96,8 @@ function Nav() {
               </React.Fragment>
             ) : (
               <React.Fragment>
-                <NavLink to="/" className="list-group-item list-group-item-action">Calendar</NavLink>
+                <NavLink exact to="/" className="list-group-item list-group-item-action">Calendar</NavLink>
+                {state.userGroup == 1 && <NavLink to="/users" className="list-group-item list-group-item-action">Users</NavLink>}
                 <a href="#" className="list-group-item list-group-item-action" onClick={state.logout}>Log out</a>
               </React.Fragment>
             )
@@ -132,7 +134,8 @@ function Content() {
       {app => (
         <div className="section section__right">
           <Switch>
-            <Route exact path="/" component={app.isLogin ? () => <Calendar app={app} /> : () => <Welcome />} />
+            <Route exact path="/" component={() => app.isLogin ? <Calendar app={app} /> : <Welcome /> } />
+            <Route path="/users" component={Users} />
             <Route path="/signup" component={Registration} />
             <Route path="/login" component={Login} />
             <Route render={() => <div className="section__wrapper">Page Not Found</div>} />
