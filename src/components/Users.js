@@ -8,7 +8,19 @@ class Users extends React.Component {
       users: [],
       userId: '',
       userEmail: '',
+      userRole: '',
       userEditing: false,
+
+      roles: [
+        {
+          id: 1,
+          title: 'Administrator'
+        },
+        {
+          id: 2,
+          title: 'User'
+        }
+      ],
 
       handleInputChange: this.handleInputChange,
       updateUser: this.updateUser,
@@ -47,11 +59,13 @@ class Users extends React.Component {
     e.preventDefault();
 
     if(!this.state.userEmail.trim().length ||
+       !this.state.userRole.length         ||
        !this.state.userId.length)
       return;
 
     const user = {
-      email: this.state.userEmail
+      email: this.state.userEmail,
+      role: this.state.userRole,
     }
 
     fetch(`/api/users/${this.state.userId}`, {
@@ -77,6 +91,7 @@ class Users extends React.Component {
         this.setState({
           userId: '',
           userEmail: '',
+          userRole: '',
           userEditing: false,
           users
         })
@@ -107,6 +122,7 @@ class Users extends React.Component {
         this.setState({
           userId: '',
           userEmail: '',
+          userRole: '',
           userEditing: false,
           users
         });
@@ -120,12 +136,14 @@ class Users extends React.Component {
     this.setState({
       userId: '',
       userEmail: '',
+      userRole: '',
       userEditing: false
     })
   }
 
   editUser = user => {
     this.setState({
+      userRole: user.role,
       userEmail: user.email,
       userId: user.id,
       userEditing: true
@@ -187,6 +205,27 @@ function UsersForm() {
                 onChange={context.handleInputChange} 
               />
             </div>
+            <div className="form-group">
+              <label htmlFor="userRole">Role</label>
+              <select 
+                className="form-control" 
+                id="userRole"
+                name="userRole" 
+                value={context.userRole}  
+                onChange={context.handleInputChange}
+              >
+                {
+                  context.roles.map(role => (
+                    <option 
+                      key={role.id} 
+                      value={role.id}
+                    >
+                      {role.title}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
             <input type="hidden" value={context.userId} />
           </div>
           <div className="card-footer bg-white">
@@ -194,7 +233,10 @@ function UsersForm() {
               <button 
                 type="submit" 
                 className="btn btn-primary" 
-                disabled={!context.userEmail.trim().length}
+                disabled={
+                  !context.userEmail.trim().length ||
+                  !context.userRole.length
+                }
               >
                 Update
               </button>
@@ -212,24 +254,35 @@ function UsersTable() {
   return (
     <UsersContext.Consumer>
       {context => (
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Email</th>
-            </tr>
-          </thead>
-          <tbody>
-          {context.users.map(user => {
-            return (
-              <tr key={user.id} onClick={() => context.editUser(user)}>
-                <th scope="row">{user.id}</th>
-                <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
+        <div className="section__wrapper">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
               </tr>
-            )
-          })}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+            {context.users.map(user => {
+              return (
+                <tr key={user.id} onClick={() => context.editUser(user)}>
+                  <th scope="row">{user.id}</th>
+                  <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
+                  <td>
+                    {context.roles.filter(role => {
+                      if(context.userEditing && context.userId == user.id)
+                        return context.userRole == role.id
+                      else
+                        return user.role == role.id
+                    })[0].title}
+                  </td>
+                </tr>
+              )
+            })}
+            </tbody>
+          </table>
+        </div>
       )}
     </UsersContext.Consumer>
   )
