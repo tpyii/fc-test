@@ -17,7 +17,8 @@ class Users extends React.Component {
       updateUser: this.updateUser,
       handleDeleteUser: this.handleDeleteUser,
       handleCancelEditUser: this.handleCancelEditUser,
-      editUser: this.editUser
+      editUser: this.editUser,
+      getRoleTitle: this.getRoleTitle
     }
   }
 
@@ -168,6 +169,17 @@ class Users extends React.Component {
       .catch(e => console.log(e));
   }
 
+  getRoleTitle = user => {
+    const r = this.state.roles.filter(role => {
+      if(this.state.userEditing && this.state.userId == user.id)
+        return this.state.userRole == role.id
+      else
+        return user.role == role.id
+    })[0]
+
+    return r.title ? r.title : ''
+}
+
   render() {
     return (
       <UsersContext.Provider value={this.state}>
@@ -274,14 +286,7 @@ function UsersTable() {
                 <tr key={user.id} onClick={() => context.editUser(user)}>
                   <th scope="row">{user.id}</th>
                   <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
-                  <td>
-                    {context.roles.filter(role => {
-                      if(context.userEditing && context.userId == user.id)
-                        return context.userRole == role.id
-                      else
-                        return user.role == role.id
-                    })[0].title}
-                  </td>
+                  <td>{() => context.getRoleTitle(user)}</td>
                 </tr>
               )
             })}
