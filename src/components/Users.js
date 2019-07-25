@@ -170,6 +170,9 @@ class Users extends React.Component {
   }
 
   getRoleTitle = user => {
+    if(!this.state.roles.length)
+      return '';
+
     const r = this.state.roles.filter(role => {
       if(this.state.userEditing && this.state.userId == user.id)
         return this.state.userRole == role.id
@@ -177,7 +180,7 @@ class Users extends React.Component {
         return user.role == role.id
     })[0]
 
-    return r.title ? r.title : ''
+    return r.title || ''
 }
 
   render() {
@@ -286,7 +289,7 @@ function UsersTable() {
                 <tr key={user.id} onClick={() => context.editUser(user)}>
                   <th scope="row">{user.id}</th>
                   <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
-                  <td>{() => context.getRoleTitle(user)}</td>
+                  <td>{context.getRoleTitle(user)}</td>
                 </tr>
               )
             })}
