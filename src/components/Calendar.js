@@ -16,27 +16,14 @@ class Calendar extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      groupId: '',
-      groupTitle: '',
-      groupEditing: false,
-
-      sourceId: '',
-      sourceTitle: '',
-      sourceGroup: '',
-      sourceParent: '',
-      sourceEditing: false,
-
       eventId: '',
       eventTitle: '',
       eventDescription: '',
       eventResource: [],
-      eventUsers: [],
       eventStart: '',
       eventEnd: '',
       eventEditing: false,
 
-      users: [],
-      groups: [],
       resources: [],
       events: [],
 
@@ -46,24 +33,13 @@ class Calendar extends React.Component {
       handleDrop: this.handleDrop,
       updateEventAfterDrop: this.updateEventAfterDrop,
       updateEvent: this.updateEvent,
-      updateSource: this.updateSource,
       handleCancelEditEvent: this.handleCancelEditEvent,
-      addSource: this.addSource,
       addEvent: this.addEvent,
       fetchResources: this.fetchResources,
       fetchEvents: this.fetchEvents,
       handleDeleteEvent: this.handleDeleteEvent,
       handleResize: this.handleResize,
       eventRender: this.eventRender,
-      datesRender: this.datesRender,
-      resourceRender: this.resourceRender,
-      handleDeleteSource: this.handleDeleteSource,
-      handleCancelEditSource: this.handleCancelEditSource,
-      fetchGroups: this.fetchGroups,
-      addGroup: this.addGroup,
-      updateGroup: this.updateGroup,
-      handleDeleteGroup: this.handleDeleteGroup,
-      handleCancelEditGroup: this.handleCancelEditGroup,
     }
   }
 
@@ -71,9 +47,7 @@ class Calendar extends React.Component {
     const { userGroup } = this.props.app;
 
     if(userGroup == 1) {
-      this.fetchGroups();
       this.fetchResources();
-      this.fetchUsers();
     }
 
     this.fetchEvents();
@@ -93,7 +67,6 @@ class Calendar extends React.Component {
       let editEvent = {};
       let resourceIds = [];
       const resources = info.event.getResources();
-      const users = info.event.extendedProps.users || [];
       const description = info.event.extendedProps.description || '';
 
       if(resources) {
@@ -108,7 +81,6 @@ class Calendar extends React.Component {
       editEvent.eventDescription = description;
       editEvent.eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
       editEvent.eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
-      editEvent.eventUsers = users;
 
       this.setState({...editEvent});
     }
@@ -137,7 +109,6 @@ class Calendar extends React.Component {
         eventDescription: '',
         eventStart,
         eventEnd,
-        eventUsers: [],
         eventEditing: false,
         eventId: ''
       });
@@ -302,8 +273,7 @@ class Calendar extends React.Component {
     if(!this.state.eventTitle.trim().length ||
        !this.state.eventStart.trim().length ||
        !this.state.eventEnd.trim().length   ||
-       !this.state.eventResource.length     ||
-       !this.state.eventUsers.length)
+       !this.state.eventResource.length)
       return;
 
     const event = {
@@ -312,7 +282,6 @@ class Calendar extends React.Component {
       description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
-      users: this.state.eventUsers
     }
 
     fetch(`/api/events/${this.state.eventId}`, {
@@ -339,8 +308,6 @@ class Calendar extends React.Component {
           event.description = result.event.description
         if(result.event.resourceIds)
           event.resourceIds = result.event.resourceIds
-        if(result.event.users)
-          event.users = result.event.users
 
         const events = this.state.events.map(item => {
           if(item.id == this.state.eventId)
@@ -352,7 +319,6 @@ class Calendar extends React.Component {
         this.setState({
           eventId: '',
           eventResource: [],
-          eventUsers: [],
           eventTitle: '',
           eventDescription: '',
           eventStart: '',
@@ -372,7 +338,6 @@ class Calendar extends React.Component {
       eventTitle: '',
       eventDescription: '',
       eventResource: [],
-      eventUsers: [],
       eventStart: '',
       eventEnd: '',
       eventEditing: false
@@ -401,7 +366,6 @@ class Calendar extends React.Component {
           eventTitle: '',
           eventDescription: '',
           eventResource: [],
-          eventUsers: [],
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
@@ -412,294 +376,13 @@ class Calendar extends React.Component {
     .catch(e => console.log(e));
   }
 
-  handleCancelEditSource = e => {
-    e.preventDefault();
-    this.setState({
-      sourceId: '',
-      sourceTitle: '',
-      sourceGroup: '',
-      sourceParent: '',
-      sourceEditing: false,
-      groupId: '',
-      groupTitle: '',
-      groupEditing: false,
-    });
-  }
-
-  updateSource = e => {
-    e.preventDefault();
-
-    if(!this.state.sourceTitle.trim().length ||
-       !this.state.sourceGroup.length)
-      return;
-
-    const resource = {
-      title: this.state.sourceTitle,
-      groupId: this.state.sourceGroup,
-      parentId: this.state.sourceParent,
-    }
-
-    fetch(`/api/resources/${this.state.sourceId}`, {
-      method: 'PUT',
-      body: JSON.stringify(resource),
-      headers: {'content-type': 'application/json'}
-    })
-    .then(responce => responce.json())
-    .then(result => {
-      if(result.error) {
-        console.log(result.error);
-        return;
-      }
-
-      if(result) {
-        const resources = this.state.resources.map(item => {
-          if(item.id == this.state.sourceId)
-            return {...item, ...result}
-
-          return item;
-        });
-
-        this.setState({
-          sourceId: '',
-          sourceTitle: '',
-          sourceGroup: '',
-          sourceParent: '',
-          sourceEditing: false,
-          resources
-        })
-      }
-    })
-    .catch(e => console.log(e));
-  }
-  
-  handleDeleteSource = e => {
-    e.preventDefault();
-
-    if(!this.state.sourceId)
-      return;
-
-    fetch(`/api/resources/${this.state.sourceId}`, {
-      method: 'DELETE'
-    })
-    .then(responce => responce.json())
-    .then(result => {
-      if(result.error)
-        console.log(result.error);
-
-      if(result.resource) {
-        const resources = this.state.resources.filter(resource => resource.id != result.resource)
-      
-        this.setState({
-          sourceId: '',
-          sourceTitle: '',
-          sourceGroup: '',
-          sourceParent: '',
-          sourceEditing: false,
-          groupId: '',
-          groupTitle: '',
-          groupEditing: false,
-          resources
-        });
-      }
-    })
-    .catch(e => console.log(e));
-  }
-
-  handleClickResource = info => {
-    const resource = this.state.resources.filter(resource => resource.id == info.resource.id)[0]
-
-    this.setState({
-      sourceId: info.resource.id,
-      sourceTitle: info.resource.title,
-      sourceGroup: resource.groupId ? resource.groupId : '',
-      sourceParent: resource ? resource.parentId : '',
-      sourceEditing: true,
-      groupId: resource.groupId ? resource.groupId : '',
-      groupTitle: resource.groupTitle ? resource.groupTitle : '',
-      groupEditing: resource.groupId ? true : false,
-    });
-  }
-
-  updateGroup = e => {
-    e.preventDefault();
-
-    if(!this.state.groupTitle.trim().length)
-      return;
-
-    const group = {
-      title: this.state.groupTitle,
-    }
-
-    fetch(`/api/groups/${this.state.groupId}`, {
-      method: 'PUT',
-      body: JSON.stringify(group),
-      headers: {'content-type': 'application/json'}
-    })
-    .then(responce => responce.json())
-    .then(result => {
-      if(result.error) {
-        console.log(result.error);
-        return;
-      }
-
-      if(result) {
-        const groups = this.state.groups.map(item => {
-          if(item.id == this.state.groupId)
-            return {...item, ...result}
-
-          return item;
-        });
-
-        const resources = this.state.resources.map(resource => {
-          if(resource.groupId == result.id)
-            return {...resource, groupTitle: result.title}
-
-          return resource;
-        })
-
-        this.setState({
-          groupId: '',
-          groupTitle: '',
-          groupEditing: false,
-          groups,
-          resources
-        })
-      }
-    })
-    .catch(e => console.log(e));
-  }
-
-  handleDeleteGroup = e => {
-    e.preventDefault();
-
-    if(!this.state.groupId)
-      return;
-
-    fetch(`/api/groups/${this.state.groupId}`, {
-      method: 'DELETE'
-    })
-    .then(responce => responce.json())
-    .then(result => {
-      if(result.error)
-        console.log(result.error);
-
-      if(result.group) {
-        const groups = this.state.groups.filter(group => group.id != result.group)
-        const resources = this.state.resources.map(resource => {
-          if(resource.groupId == result.group)
-            return {...resource, groupId: null, groupTitle: null}
-
-          return resource;
-        })
-      
-        this.setState({
-          groupId: '',
-          groupTitle: '',
-          groupEditing: false,
-          groups,
-          resources
-        });
-      }
-    })
-    .catch(e => console.log(e));
-  }
-
-  handleCancelEditGroup = e => {
-    e.preventDefault();
-    this.setState({
-      groupId: '',
-      groupTitle: '',
-      groupEditing: false,
-    });
-  }
-
-  addGroup = e => {
-    e.preventDefault();
-
-    if(!this.state.groupTitle.trim().length)
-      return;
-
-    const group = {
-      title: this.state.groupTitle
-    }
-
-    fetch('/api/groups', {
-      method: 'POST',
-      body: JSON.stringify(group),
-      headers: {'content-type': 'application/json'}
-    })
-    .then(response => response.json())
-    .then(result => {
-      if(result.error) {
-        console.log(result.error);
-        return;
-      }
-
-      if(result) {
-        this.setState(state => {
-          return {
-            groups: [...state.groups, result]
-          }
-        })
-      }
-    })
-    .catch(e => console.log(e));
-
-    this.setState({
-      groupTitle: '',
-    })
-  }
-
-  addSource = e => {
-    e.preventDefault();
-
-    if(!this.state.sourceTitle.trim().length ||
-       !this.state.sourceGroup.length)
-      return;
-
-    const resource = {
-      groupId: this.state.sourceGroup,
-      parentId: this.state.sourceParent,
-      title: this.state.sourceTitle
-    }
-
-    fetch('/api/resources', {
-      method: 'POST',
-      body: JSON.stringify(resource),
-      headers: {'content-type': 'application/json'}
-    })
-    .then(response => response.json())
-    .then(result => {
-      if(result.error) {
-        console.log(result.error);
-        return;
-      }
-
-      if(result) {
-        this.setState(state => {
-          return {
-            resources: [...state.resources, result]
-          }
-        })
-      }
-    })
-    .catch(e => console.log(e));
-
-    this.setState({
-      sourceGroup: '',
-      sourceParent: '',
-      sourceTitle: '',
-    })
-  }
-
   addEvent = e => {
     e.preventDefault();
 
     if(!this.state.eventTitle.trim().length ||
        !this.state.eventStart.trim().length ||
        !this.state.eventEnd.trim().length   ||
-       !this.state.eventResource.length     ||
-       !this.state.eventUsers.length)
+       !this.state.eventResource.length)
       return;
 
     const event = {
@@ -708,7 +391,6 @@ class Calendar extends React.Component {
       description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
-      users: this.state.eventUsers
     }
 
     fetch('/api/events', {
@@ -726,7 +408,6 @@ class Calendar extends React.Component {
           return {
             eventId: '',
             eventResource: [],
-            eventUsers: [],
             eventTitle: '',
             eventDescription: '',
             eventStart: '',
@@ -737,21 +418,6 @@ class Calendar extends React.Component {
       }
     })
     .catch(e => console.log(e));
-  }
-
-  fetchGroups = () => {
-    fetch('/api/groups')
-      .then(responce => responce.json())
-      .then(result => {
-        if(result.error) {
-          console.log(result.error);
-          return;
-        }
-
-        if(result)
-          this.setState({groups: result})
-      })
-      .catch(e => console.log(e));
   }
 
   fetchResources = () => {
@@ -769,24 +435,9 @@ class Calendar extends React.Component {
       .catch(e => console.log(e));
   }
 
-  fetchUsers = () => {
-    fetch('/api/users')
-      .then(responce => responce.json())
-      .then(result => {
-        if(result.error) {
-          console.log(result.error);
-          return;
-        }
-
-        if(result)
-          this.setState({users: result})
-      })
-      .catch(e => console.log(e));
-  }
-
   fetchEvents = () => {
     const { userId, userGroup } = this.props.app;
-    const url = userGroup == 1 ? '/api/events' : `/api/events/user/${userId}`;
+    const url = userGroup == 1 ? '/api/events' : `/api/events/resource/${userId}`;
     
     fetch(url)
       .then(responce => responce.json())
@@ -798,16 +449,6 @@ class Calendar extends React.Component {
           this.setState({events: result.events})
       })
       .catch(e => console.log(e));
-  }
-
-  resourceRender = info => {
-    const typeView = info.view.type;
-    if(typeView == 'resourceTimelineDay'  ||
-       typeView == 'resourceTimelineWeek' ||
-       typeView == 'resourceTimelineMonth') {
-
-      info.el.onclick = (e) => this.handleClickResource(info);
-    }
   }
 
   eventRender = info => {
@@ -845,131 +486,6 @@ class Calendar extends React.Component {
 }
 
 Calendar.contextType = CalendarContext;
-
-function GroupsForm() {
-  return (
-    <CalendarContext.Consumer>
-      {context => (
-        <form className="form-group card" onSubmit={context.groupEditing ? context.updateGroup : context.addGroup}>
-          <h5 className="card-header bg-white">{context.groupEditing ? 'Edit' : 'Add'} Group</h5>
-          <div className="card-body">
-            <div className="form-group">
-              <label htmlFor="groupTitle">Title</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                id="groupTitle" 
-                name="groupTitle" 
-                value={context.groupTitle} 
-                onChange={context.handleInputChange} 
-              />
-            </div>
-            <input type="hidden" value={context.groupId} />
-          </div>
-          <div className="card-footer bg-white">
-            <div className="btn-group">
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={!context.groupTitle.trim().length}
-              >
-                {context.groupEditing ? 'Update' : 'Add'}
-              </button>
-              {context.groupEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteGroup}>Delete</button>}
-              {context.groupEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditGroup}>Cancel</button>}
-            </div>
-          </div>
-        </form>
-      )}
-    </CalendarContext.Consumer>
-  )
-}
-
-function ResourcesForm() {
-  return (
-    <CalendarContext.Consumer>
-      {context => (
-        <form className="form-group card" onSubmit={context.sourceEditing ? context.updateSource : context.addSource}>
-          <h5 className="card-header bg-white">{context.sourceEditing ? 'Edit' : 'Add'} Resource</h5>
-          <div className="card-body">
-            <div className="form-group">
-              <label htmlFor="sourceTitle">Title</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                id="sourceTitle" 
-                name="sourceTitle" 
-                value={context.sourceTitle} 
-                onChange={context.handleInputChange} 
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="sourceGroup">Group</label>
-              <select 
-                className="form-control" 
-                id="sourceGroup"
-                name="sourceGroup" 
-                value={context.sourceGroup}  
-                onChange={context.handleInputChange}
-              >
-                <option value="">-- select group --</option>
-                  {
-                    context.groups.map(group => (
-                      <option 
-                        key={group.id} 
-                        value={group.id}
-                      >
-                        {group.title}
-                      </option>
-                    ))
-                  }
-              </select>
-            </div>
-            <div className="form-group">
-              <label htmlFor="sourceParent">Parent</label>
-              <select 
-                className="form-control" 
-                id="sourceParent"
-                name="sourceParent" 
-                value={context.sourceParent}  
-                onChange={context.handleInputChange}
-              >
-                <option value="">-- select parent resource --</option>
-                  {
-                    context.resources.map(resource => (
-                      <option 
-                        key={resource.id} 
-                        value={resource.id}
-                      >
-                        {resource.title}
-                      </option>
-                    ))
-                  }
-              </select>
-            </div>
-            <input type="hidden" value={context.sourceId} />
-          </div>
-          <div className="card-footer bg-white">
-            <div className="btn-group">
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={
-                  !context.sourceTitle.trim().length ||
-                  !context.sourceGroup.length
-                }
-              >
-                {context.sourceEditing ? 'Update' : 'Add'}
-              </button>
-              {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteSource}>Delete</button>}
-              {context.sourceEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditSource}>Cancel</button>}
-            </div>
-          </div>
-        </form>
-      )}
-    </CalendarContext.Consumer>
-  )
-}
 
 function EventsForm() {
   return (
@@ -1024,28 +540,6 @@ function EventsForm() {
               </select>
             </div>
             <div className="form-group">
-              <label htmlFor="eventUsers">Users</label>
-              <select 
-                className="form-control" 
-                id="eventUsers"
-                multiple={true}
-                name="eventUsers" 
-                value={context.eventUsers}  
-                onChange={context.handleInputChange}
-              >
-                {
-                  context.users.map(user => (
-                    <option 
-                      key={user.id} 
-                      value={user.id}
-                    >
-                      {user.email}
-                    </option>
-                  ))
-                }
-              </select>
-            </div>
-            <div className="form-group">
               <label htmlFor="eventStart">Start</label>
               <input 
                 type="text" 
@@ -1079,7 +573,6 @@ function EventsForm() {
                 disabled={
                   !context.eventTitle.trim().length || 
                   !context.eventResource.length || 
-                  !context.eventUsers.length || 
                   !context.eventStart.trim().length || 
                   !context.eventEnd.trim().length
                 }
@@ -1099,8 +592,6 @@ function EventsForm() {
 function Sidebar() {
   return (
     <div className="section section__left">
-      <GroupsForm />
-      <ResourcesForm />
       <EventsForm />
     </div>
   )
@@ -1158,10 +649,8 @@ function Content() {
                     selectable: app.userGroup === '1' ? true : false,
                   }
                 }}
-                resourceGroupField='groupTitle'
                 resourceRender={calendar.resourceRender}
                 eventRender={calendar.eventRender}
-                datesRender={calendar.datesRender}
                 editable={app.userGroup === '1' ? true : false}
                 nowIndicator={true}
                 eventClick={calendar.handleEventClick}
