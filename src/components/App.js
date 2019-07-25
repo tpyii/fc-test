@@ -15,7 +15,7 @@ class App extends React.Component {
       userGroup: '',
       isLogin: false,
       logout: this.logout,
-      toggleLogin: this.toggleLogin
+      toggleLogin: this.toggleLogin,
     }
   }
 
@@ -40,6 +40,8 @@ class App extends React.Component {
       .then(result => {
         if(result.error) {
           console.log(result.error);
+          if(location.pathname != '/')
+            location = location.protocol + '//' + location.hostname;
           return;
         }
 
