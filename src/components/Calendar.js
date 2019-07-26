@@ -574,7 +574,15 @@ function EventsForm() {
                 {context.eventEditing ? 'Update' : 'Add'}
               </button>
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteEvent}>Delete</button>}
-              {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleCancelEditEvent}>Cancel</button>}
+              {
+                context.eventTitle.trim().length ||
+                context.eventDescription.trim().length ||
+                context.eventResource.length || 
+                context.eventStart.trim().length ||
+                context.eventEnd.trim().length 
+                  ? <button type="button" className="btn btn-primary" onClick={context.handleCancelEditEvent}>Cancel</button>
+                  : false
+              }
             </div>
           </div>
         </form>
