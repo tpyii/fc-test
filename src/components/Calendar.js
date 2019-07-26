@@ -23,6 +23,7 @@ class Calendar extends React.Component {
       eventStart: '',
       eventEnd: '',
       eventEditing: false,
+      eventAllDay: false,
 
       resources: [],
       events: [],
@@ -71,8 +72,9 @@ class Calendar extends React.Component {
         eventDescription: info.event.extendedProps.description || '',
         eventResource: resourceIds,
         eventStart: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
-        eventEnd: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
+        eventEnd: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: true,
+        eventAllDay: info.event.allDay,
       });
     }
   }
@@ -90,7 +92,8 @@ class Calendar extends React.Component {
         eventStart: moment(info.start).format('YYYY-MM-DDTHH:mm:ss'),
         eventEnd: moment(info.end).format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: false,
-        eventId: ''
+        eventId: '',
+        eventAllDay: false,
       });
     }
   }
@@ -143,6 +146,7 @@ class Calendar extends React.Component {
         start: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
         end: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
         description: info.event.extendedProps.description,
+        allDay: info.event.allDay,
         resourceIds,
       }
 
@@ -158,16 +162,13 @@ class Calendar extends React.Component {
 
         if(result.event) {
 
-          let event = {}
-
-          if(result.event.start)
-            event.start = result.event.start
-          if(result.event.end)
-            event.end = result.event.end
-          if(result.event.title)
-            event.title = result.event.title
-          if(result.event.description)
-            event.description = result.event.description
+          let event = {
+            start: result.event.start,
+            end: result.event.end,
+            title: result.event.title,
+            description: result.event.description,
+            allDay: result.event.allDay,
+          }
 
           const events = this.state.events.map(item => {
             if(item.id == info.event.id)
@@ -184,6 +185,7 @@ class Calendar extends React.Component {
             eventStart: '',
             eventEnd: '',
             eventEditing: false,
+            eventAllDay: false,
             events
           })
         }
@@ -198,8 +200,9 @@ class Calendar extends React.Component {
     let event = {
       title: item.title,
       start: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
-      end: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
+      end: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
       description: item.description,
+      allDay: info.event.allDay,
       resourceIds: item.resourceIds,
     }
 
@@ -225,16 +228,14 @@ class Calendar extends React.Component {
 
       if(result.event) {
 
-        let event = {}
+        let event = {
+          start: result.event.start,
+          end: result.event.end,
+          title: result.event.title,
+          description: result.event.description,
+          allDay: result.event.allDay,
+        }
 
-        if(result.event.start)
-          event.start = result.event.start
-        if(result.event.end)
-          event.end = result.event.end
-        if(result.event.title)
-          event.title = result.event.title
-        if(result.event.description)
-          event.description = result.event.description
         if(result.event.resourceIds)
           event.resourceIds = result.event.resourceIds
 
@@ -253,6 +254,7 @@ class Calendar extends React.Component {
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
+          eventAllDay: false,
           events
         })
       }
@@ -275,6 +277,7 @@ class Calendar extends React.Component {
       description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
+      allDay: this.state.eventAllDay,
     }
 
     fetch(`/api/events/${this.state.eventId}`, {
@@ -289,16 +292,14 @@ class Calendar extends React.Component {
 
       if(result.event) {
 
-        let event = {}
+        let event = {
+          start: result.event.start,
+          end: result.event.end,
+          title: result.event.title,
+          description: result.event.description,
+          allDay: result.event.allDay,
+        }
 
-        if(result.event.start)
-          event.start = result.event.start
-        if(result.event.end)
-          event.end = result.event.end
-        if(result.event.title)
-          event.title = result.event.title
-        if(result.event.description)
-          event.description = result.event.description
         if(result.event.resourceIds)
           event.resourceIds = result.event.resourceIds
 
@@ -317,6 +318,7 @@ class Calendar extends React.Component {
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
+          eventAllDay: false,
           events
         })
       }
@@ -333,7 +335,8 @@ class Calendar extends React.Component {
       eventResource: [],
       eventStart: '',
       eventEnd: '',
-      eventEditing: false
+      eventEditing: false,
+      eventAllDay: false,
     });
   }
 
@@ -362,6 +365,7 @@ class Calendar extends React.Component {
           eventStart: '',
           eventEnd: '',
           eventEditing: false,
+          eventAllDay: false,
           events
         });
       }
@@ -384,6 +388,7 @@ class Calendar extends React.Component {
       description: this.state.eventDescription,
       start: this.state.eventStart,
       end: this.state.eventEnd,
+      allDay: this.state.eventAllDay,
     }
 
     fetch('/api/events', {
@@ -406,6 +411,7 @@ class Calendar extends React.Component {
             eventStart: '',
             eventEnd: '',
             eventEditing: false,
+            eventAllDay: false,
             events: [...state.events, result.event]
           }
         })
@@ -462,9 +468,12 @@ class Calendar extends React.Component {
         else
           content = info.el.querySelector('.fc-content');
 
+        if(!content)
+          return;
+
         description = document.createElement('div');
         description.className = 'fc-description';
-        description.innerHTML = info.event.extendedProps.description;
+        description.innerHTML = info.event.extendedProps.description || '';
         content.appendChild(description);
       }
     }
@@ -556,6 +565,20 @@ function EventsForm() {
                 value={context.eventEnd} 
                 onChange={context.handleInputChange} 
               />
+            </div>
+            <div className="form-check">
+              <input 
+                className="form-check-input" 
+                type="checkbox" 
+                value={context.eventAllDay}
+                checked={context.eventAllDay}
+                id="eventAllDay"
+                name="eventAllDay"
+                onChange={context.handleInputChange} 
+              />
+              <label className="form-check-label" htmlFor="eventAllDay">
+                All day
+              </label>
             </div>
             <input type="hidden" value={context.eventId} />
           </div>
