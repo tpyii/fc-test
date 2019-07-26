@@ -59,30 +59,21 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
-      this.setState({
-        eventId: info.event.id,
-        eventEditing: true
-      });
-
-      let editEvent = {};
       let resourceIds = [];
       const resources = info.event.getResources();
-      const description = info.event.extendedProps.description || '';
 
-      if(resources) {
-        resources.map(resource => {
-          resourceIds.push(resource.id)
-        })
+      if(resources)
+        resources.map(resource => resourceIds.push(resource.id))
 
-        editEvent.eventResource = resourceIds;
-      }
-
-      editEvent.eventTitle = info.event.title;
-      editEvent.eventDescription = description;
-      editEvent.eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
-      editEvent.eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
-
-      this.setState({...editEvent});
+      this.setState({
+        eventId: info.event.id,
+        eventTitle: info.event.title,
+        eventDescription: info.event.extendedProps.description || '',
+        eventResource: resourceIds,
+        eventStart: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
+        eventEnd: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
+        eventEditing: true,
+      });
     }
   }
 
@@ -92,23 +83,12 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
-      let eventStart = '';
-      let eventEnd = '';
-
-      if(info.allDay) {
-        eventStart = `${info.startStr}T00:00:00`;
-        eventEnd = `${info.endStr}T00:00:00`;
-      } else {
-        eventStart = info.startStr.slice(0, -6);
-        eventEnd = info.endStr.slice(0, -6);
-      }
-
       this.setState({
         eventResource: [info.resource.id],
         eventTitle: '',
         eventDescription: '',
-        eventStart,
-        eventEnd,
+        eventStart: moment(info.start).format('YYYY-MM-DDTHH:mm:ss'),
+        eventEnd: moment(info.end).format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: false,
         eventId: ''
       });
@@ -152,15 +132,18 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
-      const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
-      const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
+      let resourceIds = [];
+      const resources = info.event.getResources();
 
-      let item = this.state.events.filter(item => item.id == info.event.id)[0];
+      if(resources)
+        resources.map(resource => resourceIds.push(resource.id))
+
       let event = {
-        title: item.title,
-        start: eventStart,
-        end: eventEnd,
-        description: item.description,
+        title: info.event.title,
+        start: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
+        end: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
+        description: info.event.extendedProps.description,
+        resourceIds,
       }
 
       fetch(`/api/events/${info.event.id}`, {
@@ -194,8 +177,13 @@ class Calendar extends React.Component {
           });
 
           this.setState({
-            'eventStart': event.start,
-            'eventEnd': event.end,
+            eventId: '',
+            eventResource: [],
+            eventTitle: '',
+            eventDescription: '',
+            eventStart: '',
+            eventEnd: '',
+            eventEditing: false,
             events
           })
         }
@@ -206,21 +194,22 @@ class Calendar extends React.Component {
   }
 
   updateEventAfterDrop = info => {
-    const eventStart = moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss');
-    const eventEnd = moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss');
-
     let item = this.state.events.filter(item => item.id == info.event.id)[0];
     let event = {
       title: item.title,
-      start: eventStart,
-      end: eventEnd,
+      start: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
+      end: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
       description: item.description,
+      resourceIds: item.resourceIds,
     }
 
     if(info.newResource && info.oldResource) {
       let resourceIds = item.resourceIds;
       const index = resourceIds.indexOf(info.oldResource.id);
-      resourceIds.splice(index, 1, info.newResource.id);
+
+      if(index != -1)
+        resourceIds.splice(index, 1, info.newResource.id);
+
       event.resourceIds = resourceIds;
     }
 
@@ -257,9 +246,13 @@ class Calendar extends React.Component {
         });
 
         this.setState({
-          'eventStart': event.start,
-          'eventEnd': event.end,
-          'eventResource': event.resourceIds,
+          eventId: '',
+          eventResource: [],
+          eventTitle: '',
+          eventDescription: '',
+          eventStart: '',
+          eventEnd: '',
+          eventEditing: false,
           events
         })
       }
@@ -412,6 +405,7 @@ class Calendar extends React.Component {
             eventDescription: '',
             eventStart: '',
             eventEnd: '',
+            eventEditing: false,
             events: [...state.events, result.event]
           }
         })
