@@ -9,6 +9,7 @@ import bootstrapPlugin from '@fullcalendar/bootstrap';
 import ruLocale from '@fullcalendar/core/locales/ru';
 import moment from 'moment';
 import { AppContext } from './App';
+import Select from 'react-select';
 
 export const CalendarContext = React.createContext();
 
@@ -41,6 +42,7 @@ class Calendar extends React.Component {
       handleDeleteEvent: this.handleDeleteEvent,
       handleResize: this.handleResize,
       eventRender: this.eventRender,
+      handleSelectChange: this.handleSelectChange,
     }
   }
 
@@ -63,8 +65,14 @@ class Calendar extends React.Component {
       let resourceIds = [];
       const resources = info.event.getResources();
 
-      if(resources)
-        resources.map(resource => resourceIds.push(resource.id))
+      if(resources) {
+        resources.map(resource => {
+          resourceIds.push({
+            id: resource.id,
+            title: resource.title
+          })
+        })
+      }
 
       this.setState({
         eventId: info.event.id,
@@ -85,8 +93,13 @@ class Calendar extends React.Component {
        typeView == 'resourceTimelineWeek' ||
        typeView == 'resourceTimelineMonth') {
 
+      const resource = {
+        id: info.resource.id,
+        title: info.resource.title
+      }
+
       this.setState({
-        eventResource: [info.resource.id],
+        eventResource: [resource],
         eventTitle: '',
         eventDescription: '',
         eventStart: moment(info.start).format('YYYY-MM-DDTHH:mm:ss'),
@@ -96,6 +109,10 @@ class Calendar extends React.Component {
         eventAllDay: false,
       });
     }
+  }
+
+  handleSelectChange = (name, value) => {
+    this.setState({[name]: value || []});
   }
 
   handleInputChange = event => {
@@ -272,7 +289,7 @@ class Calendar extends React.Component {
       return;
 
     const event = {
-      resourceIds: this.state.eventResource,
+      resourceIds: this.state.eventResource.map(resource => resource.id),
       title: this.state.eventTitle,
       description: this.state.eventDescription,
       start: this.state.eventStart,
@@ -383,7 +400,7 @@ class Calendar extends React.Component {
       return;
 
     const event = {
-      resourceIds: this.state.eventResource,
+      resourceIds: this.state.eventResource.map(resource => resource.id),
       title: this.state.eventTitle,
       description: this.state.eventDescription,
       start: this.state.eventStart,
@@ -522,25 +539,17 @@ function EventsForm() {
             </div>
             <div className="form-group">
               <label htmlFor="eventResource">Resource</label>
-              <select 
-                className="form-control" 
+              <Select
+                placeholder=""
+                isMulti
                 id="eventResource"
-                multiple={true}
-                name="eventResource" 
-                value={context.eventResource}  
-                onChange={context.handleInputChange}
-              >
-                {
-                  context.resources.map(resource => (
-                    <option 
-                      key={resource.id} 
-                      value={resource.id}
-                    >
-                      {resource.title}
-                    </option>
-                  ))
-                }
-              </select>
+                name="eventResource"
+                onChange={(option) => context.handleSelectChange('eventResource', option)}
+                options={context.resources}
+                getOptionLabel={(option) => option.title}
+                getOptionValue={(option) => option.id}
+                value={context.eventResource}
+              />
             </div>
             <div className="form-group">
               <label htmlFor="eventStart">Start</label>

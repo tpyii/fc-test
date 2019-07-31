@@ -1,4 +1,5 @@
 import React from 'react';
+import Select from 'react-select';
 export const UsersContext = React.createContext();
 
 class Users extends React.Component {
@@ -18,13 +19,18 @@ class Users extends React.Component {
       handleDeleteUser: this.handleDeleteUser,
       handleCancelEditUser: this.handleCancelEditUser,
       editUser: this.editUser,
-      getRoleTitle: this.getRoleTitle
+      getRoleTitle: this.getRoleTitle,
+      handleSelectChange: this.handleSelectChange,
     }
   }
 
   componentWillMount = () => {
     this.fetchUsers();
     this.fetchRoles();
+  }
+
+  handleSelectChange = (name, value) => {
+    this.setState({[name]: value || ''});
   }
 
   handleInputChange = event => {
@@ -221,30 +227,22 @@ function UsersForm() {
                 className="form-control" 
                 id="userEmail" 
                 name="userEmail" 
-                value={context.userEmail} 
+                value={context.userEmail}
                 onChange={context.handleInputChange} 
               />
             </div>
             <div className="form-group">
               <label htmlFor="userRole">Role</label>
-              <select 
-                className="form-control" 
+              <Select
+                placeholder=""
                 id="userRole"
-                name="userRole" 
-                value={context.userRole}  
-                onChange={context.handleInputChange}
-              >
-                {
-                  context.roles.map(role => (
-                    <option 
-                      key={role.id} 
-                      value={role.id}
-                    >
-                      {role.title}
-                    </option>
-                  ))
-                }
-              </select>
+                name="userRole"
+                onChange={(option) => context.handleSelectChange('userRole', option.id)}
+                options={context.roles}
+                getOptionLabel={(option) => option.title}
+                getOptionValue={(option) => option.id}
+                value={context.userEditing && context.roles.filter(role => role.id === context.userRole)}
+              />
             </div>
             <input type="hidden" value={context.userId} />
           </div>
