@@ -266,6 +266,7 @@ function Switche({section, option, acl}) {
             type="checkbox" 
             className="custom-control-input" 
             id={id}
+            disabled={title === 'Calendar' && option === 'show'}
             onChange={() => context.handleInputChangeAcl(title, section, option)} 
           />
           <label 
