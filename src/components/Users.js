@@ -273,7 +273,7 @@ function UsersTable() {
     <UsersContext.Consumer>
       {context => (
         <div className="section__wrapper">
-          <table class="table table-hover">
+          <table className="table table-hover">
             <thead>
               <tr>
                 <th scope="col">#</th>
