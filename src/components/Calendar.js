@@ -25,6 +25,7 @@ class Calendar extends React.Component {
       eventEnd: '',
       eventEditing: false,
       eventAllDay: false,
+      eventOrder: {},
 
       acl: this.getAcl(),
       resources: [],
@@ -43,6 +44,7 @@ class Calendar extends React.Component {
       handleDeleteEvent: this.handleDeleteEvent,
       handleResize: this.handleResize,
       eventRender: this.eventRender,
+      handleMultipleSelectChange: this.handleMultipleSelectChange,
       handleSelectChange: this.handleSelectChange,
     }
   }
@@ -52,8 +54,10 @@ class Calendar extends React.Component {
   }
 
   componentWillMount = () => {
-    if(this.state.acl.settings.main.edit === true)
+    if(this.state.acl.settings.main.edit === true) {
       this.fetchResources();
+      this.fetchOrders();
+    }
 
     this.fetchEvents();
   }
@@ -85,6 +89,7 @@ class Calendar extends React.Component {
         eventEnd: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: true,
         eventAllDay: info.event.allDay,
+        eventOrder: info.event.order,
       });
     }
   }
@@ -109,12 +114,17 @@ class Calendar extends React.Component {
         eventEditing: false,
         eventId: '',
         eventAllDay: false,
+        eventOrder: {},
       });
     }
   }
 
-  handleSelectChange = (name, value) => {
+  handleMultipleSelectChange = (name, value) => {
     this.setState({[name]: value || []});
+  }
+
+  handleSelectChange = (name, value) => {
+    this.setState({[name]: value || {}});
   }
 
   handleInputChange = event => {
@@ -167,6 +177,7 @@ class Calendar extends React.Component {
         description: info.event.extendedProps.description,
         allDay: info.event.allDay,
         resourceIds,
+        order: info.event.extendedProps.order,
       }
 
       fetch(`/api/events/${info.event.id}`, {
@@ -187,6 +198,7 @@ class Calendar extends React.Component {
             title: result.event.title,
             description: result.event.description,
             allDay: result.event.allDay,
+            order: result.event.order,
           }
 
           const events = this.state.events.map(item => {
@@ -205,6 +217,7 @@ class Calendar extends React.Component {
             eventEnd: '',
             eventEditing: false,
             eventAllDay: false,
+            eventOrder: {},
             events
           })
         }
@@ -223,6 +236,7 @@ class Calendar extends React.Component {
       description: item.description,
       allDay: info.event.allDay,
       resourceIds: item.resourceIds,
+      order: item.order,
     }
 
     if(info.newResource && info.oldResource) {
@@ -253,6 +267,7 @@ class Calendar extends React.Component {
           title: result.event.title,
           description: result.event.description,
           allDay: result.event.allDay,
+          order: result.event.order,
         }
 
         if(result.event.resourceIds)
@@ -274,6 +289,7 @@ class Calendar extends React.Component {
           eventEnd: '',
           eventEditing: false,
           eventAllDay: false,
+          eventOrder: {},
           events
         })
       }
@@ -297,6 +313,7 @@ class Calendar extends React.Component {
       start: this.state.eventStart,
       end: this.state.eventEnd,
       allDay: this.state.eventAllDay,
+      order: this.state.eventOrder,
     }
 
     fetch(`/api/events/${this.state.eventId}`, {
@@ -317,6 +334,7 @@ class Calendar extends React.Component {
           title: result.event.title,
           description: result.event.description,
           allDay: result.event.allDay,
+          order: result.event.order,
         }
 
         if(result.event.resourceIds)
@@ -338,6 +356,7 @@ class Calendar extends React.Component {
           eventEnd: '',
           eventEditing: false,
           eventAllDay: false,
+          eventOrder: {},
           events
         })
       }
@@ -356,6 +375,7 @@ class Calendar extends React.Component {
       eventEnd: '',
       eventEditing: false,
       eventAllDay: false,
+      eventOrder: {},
     });
   }
 
@@ -385,6 +405,7 @@ class Calendar extends React.Component {
           eventEnd: '',
           eventEditing: false,
           eventAllDay: false,
+          eventOrder: {},
           events
         });
       }
@@ -408,6 +429,7 @@ class Calendar extends React.Component {
       start: this.state.eventStart,
       end: this.state.eventEnd,
       allDay: this.state.eventAllDay,
+      order: this.state.eventOrder,
     }
 
     fetch('/api/events', {
@@ -431,6 +453,7 @@ class Calendar extends React.Component {
             eventEnd: '',
             eventEditing: false,
             eventAllDay: false,
+            eventOrder: {},
             events: [...state.events, result.event]
           }
         })
@@ -466,6 +489,21 @@ class Calendar extends React.Component {
 
         if(result.events)
           this.setState({events: result.events})
+      })
+      .catch(e => console.log(e));
+  }
+
+  fetchOrders = () => {    
+    fetch('/api/orders')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result.error) {
+          console.log(result.error);
+          return;
+        }
+
+        if(result)
+          this.setState({orders: result})
       })
       .catch(e => console.log(e));
   }
@@ -546,11 +584,24 @@ function EventsForm() {
                 isMulti
                 id="eventResource"
                 name="eventResource"
-                onChange={(option) => context.handleSelectChange('eventResource', option)}
+                onChange={(option) => context.handleMultipleSelectChange('eventResource', option)}
                 options={context.resources}
                 getOptionLabel={(option) => option.title}
                 getOptionValue={(option) => option.id}
                 value={context.eventResource}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="eventOrder">Order</label>
+              <Select
+                placeholder=""
+                id="eventOrder"
+                name="eventOrder"
+                onChange={(option) => context.handleSelectChange('eventOrder', option)}
+                options={context.orders}
+                getOptionLabel={(option) => option.title}
+                getOptionValue={(option) => option.id}
+                value={context.eventOrder}
               />
             </div>
             <div className="form-group">
