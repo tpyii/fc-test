@@ -1,14 +1,13 @@
 import React from 'react';
-import { Redirect } from 'react-router';
 import { AppContext } from './App';
 
 
 class Login extends React.Component {
   state = {
     userEmail: '',
-    userPassword: ''
+    userPassword: '',
   }
-
+  
   handleInputChange = event => {
     const target = event.target;
     const name = target.name;
@@ -53,7 +52,8 @@ class Login extends React.Component {
         return;
       }
 
-      toggleLogin(result.id, result.role)
+      toggleLogin(result)
+      location = location.protocol + '//' + location.hostname + '/calendar';
     })
     .catch(e => console.log(e));
   }
@@ -64,50 +64,43 @@ class Login extends React.Component {
         <div className="section section__left">
           <AppContext.Consumer>
             {app => (
-              app.isLogin ? (
-
-                <Redirect to="/" />
-
-              ) : (
-
-                <form className="card" onSubmit={e => this.login(e, app.toggleLogin)}>
-                  <h5 className="card-header bg-white">Login</h5>
-                  <div className="card-body">
-                    <div className="form-group">
-                      <label htmlFor="userEmail">Email address</label>
-                      <input 
-                        type="email"
-                        className="form-control"
-                        id="userEmail"
-                        placeholder="email@example.com"
-                        name="userEmail"
-                        value={this.state.userEmail}
-                        onChange={this.handleInputChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="password">Password</label>
-                      <input 
-                        type="password" 
-                        className="form-control" 
-                        id="password" 
-                        placeholder="Password"
-                        name="userPassword" 
-                        value={this.state.userPassword}  
-                        onChange={this.handleInputChange}
-                      />
-                    </div>
+              <form className="card" onSubmit={e => this.login(e, app.toggleLogin)}>
+                <h5 className="card-header bg-white">Login</h5>
+                <div className="card-body">
+                  <div className="form-group">
+                    <label htmlFor="userEmail">Email address</label>
+                    <input 
+                      type="email"
+                      className="form-control"
+                      id="userEmail"
+                      placeholder="email@example.com"
+                      name="userEmail"
+                      value={this.state.userEmail}
+                      onChange={this.handleInputChange}
+                    />
                   </div>
-                  <div className="card-footer bg-white">
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary" 
-                    >
-                      Log in
-                    </button>
+                  <div className="form-group">
+                    <label htmlFor="password">Password</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      id="password" 
+                      placeholder="Password"
+                      name="userPassword" 
+                      value={this.state.userPassword}  
+                      onChange={this.handleInputChange}
+                    />
                   </div>
-                </form>
-              )
+                </div>
+                <div className="card-footer bg-white">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                  >
+                    Log in
+                  </button>
+                </div>
+              </form>
             )}
           </AppContext.Consumer>
         </div>
