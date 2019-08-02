@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, NavLink } from "react-router-dom";
+import { Route, Switch, NavLink, Redirect } from "react-router-dom";
 import Registration from './Registration';
 import Login from './Login';
 import Calendar from './Calendar';
@@ -13,11 +13,10 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      userId: '',
-      userGroup: '',
-      isLogin: false,
+      user: {},
       logout: this.logout,
       toggleLogin: this.toggleLogin,
+      checkAcl: this.checkAcl,
     }
   }
 
@@ -26,14 +25,12 @@ class App extends React.Component {
       this.auth();
   }
 
-  toggleLogin = (id, role) => {
-    this.setState(state => {
-      return {
-        userId: state.userId ? '' : id,
-        userGroup: state.userGroup ? '' : role,
-        isLogin: !state.isLogin
-      }
+  toggleLogin = (data) => {
+    this.setState({
+      user: this.state.user ? {} : data,
     });
+
+    return this.state.user;
   }
 
   auth = () => {
@@ -42,15 +39,14 @@ class App extends React.Component {
       .then(result => {
         if(result.error) {
           console.log(result.error);
-          if(location.pathname != '/')
-            location = location.protocol + '//' + location.hostname;
+          this.setState({
+            user: {},
+          })
           return;
         }
 
         this.setState({
-          userId: result.id,
-          userGroup: result.role,
-          isLogin: true
+          user: result,
         })
       })
       .catch(e => console.log(e));
@@ -68,12 +64,18 @@ class App extends React.Component {
         }
 
         this.setState({
-          userId: '',
-          userGroup: '',
-          isLogin: false
+          user: {},
         })
       })
       .catch(e => console.log(e));
+  }
+
+  checkAcl = (title, section, method) => {
+    const acl = this.state.user.acl.find(a => a.title === title)
+    if(!acl)
+      return false;
+
+    return acl.settings[section][method]
   }
 
   render() {
@@ -87,23 +89,41 @@ class App extends React.Component {
 
 App.contextType = AppContext;
 
+function Routers() {
+  return (
+    <AppContext.Consumer>
+      {app => (
+        <Switch>
+          <Route exact path="/" component={() => !app.user.id ? <Welcome /> : <Redirect to="/calendar" />} />
+          <Route path="/calendar" component={() => app.user.id ? <Calendar app={app} /> : <Redirect to="/" />} />
+          <Route path="/roles" component={() => app.user.id && app.checkAcl('Roles', 'main', 'show') === true ? <Roles /> : <Redirect to="/" />} />
+          <Route path="/orders" component={() => app.user.id && app.checkAcl('Orders', 'main', 'show') === true ? <Orders /> : <Redirect to="/" />} />
+          <Route path="/users" component={() => app.user.id && app.checkAcl('Users', 'main', 'show') === true ? <Users /> : <Redirect to="/" />} />
+          <Route path="/signup" component={() => !app.user.id ? <Registration /> : <Redirect to="/calendar" />} />
+          <Route path="/login" component={() => !app.user.id ? <Login /> : <Redirect to="/calendar" />} />
+          <Route render={PageNotFoud} />
+        </Switch>
+      )}
+    </AppContext.Consumer>
+  )
+}
+
 function Nav() {
   return (
     <AppContext.Consumer>
       {state => (
         <div className="list-group">
           {
-            !state.userId ? (
+            !state.user.id ? (
               <React.Fragment>
                 <NavLink to="/signup" className="list-group-item list-group-item-action">Sign up</NavLink>
                 <NavLink to="/login" className="list-group-item list-group-item-action">Log in</NavLink>
               </React.Fragment>
             ) : (
               <React.Fragment>
-                <NavLink exact to="/" className="list-group-item list-group-item-action">Calendar</NavLink>
-                {state.userGroup == 1 && <NavLink to="/orders" className="list-group-item list-group-item-action">Orders</NavLink>}
-                {state.userGroup == 1 && <NavLink to="/users" className="list-group-item list-group-item-action">Users</NavLink>}
-                {state.userGroup == 1 && <NavLink to="/roles" className="list-group-item list-group-item-action">Roles</NavLink>}
+                {state.user.acl.map(acl => {
+                  return acl.settings.main.show === true && <NavLink to={`/${acl.title.toLowerCase()}`} className="list-group-item list-group-item-action">{acl.title}</NavLink>
+                })}
                 <a href="#" className="list-group-item list-group-item-action" onClick={state.logout}>Log out</a>
               </React.Fragment>
             )
@@ -112,6 +132,10 @@ function Nav() {
       )}
     </AppContext.Consumer>
   )
+}
+
+function PageNotFoud() {
+  return <div className="section__wrapper">Page Not Found</div>
 }
 
 function Sidebar() {
@@ -136,21 +160,9 @@ function Welcome() {
 
 function Content() {
   return (
-    <AppContext.Consumer>
-      {app => (
-        <div className="section section__right">
-          <Switch>
-            <Route exact path="/" component={() => app.isLogin ? <Calendar app={app} /> : <Welcome /> } />
-            <Route path="/roles" component={Roles} />
-            <Route path="/orders" component={Orders} />
-            <Route path="/users" component={Users} />
-            <Route path="/signup" component={Registration} />
-            <Route path="/login" component={Login} />
-            <Route render={() => <div className="section__wrapper">Page Not Found</div>} />
-          </Switch>
-        </div>
-      )}
-    </AppContext.Consumer>
+    <div className="section section__right">
+      <Routers />
+    </div>
   )
 }
 

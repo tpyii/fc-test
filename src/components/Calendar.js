@@ -26,6 +26,7 @@ class Calendar extends React.Component {
       eventEditing: false,
       eventAllDay: false,
 
+      acl: this.getAcl(),
       resources: [],
       events: [],
 
@@ -46,12 +47,13 @@ class Calendar extends React.Component {
     }
   }
 
-  componentWillMount = () => {
-    const { userGroup } = this.props.app;
+  getAcl = () => {
+    return this.props.app.user.acl.find(a => a.title === 'Calendar')
+  }
 
-    if(userGroup == 1) {
+  componentWillMount = () => {
+    if(this.state.acl.settings.main.edit === true)
       this.fetchResources();
-    }
 
     this.fetchEvents();
   }
@@ -453,8 +455,8 @@ class Calendar extends React.Component {
   }
 
   fetchEvents = () => {
-    const { userId, userGroup } = this.props.app;
-    const url = userGroup == 1 ? '/api/events' : `/api/events/resource/${userId}`;
+    const { userId } = this.props.app;
+    const url = this.state.acl.settings.main.edit === true ? '/api/events' : `/api/events/resource/${userId}`;
     
     fetch(url)
       .then(responce => responce.json())
@@ -634,71 +636,67 @@ function Sidebar() {
 function Content() {
   return (
     <div className="section section__right">
-    <AppContext.Consumer>
-      {app => (
-        <CalendarContext.Consumer>
-          {calendar => (
-            <div className="section__wrapper">
-              <FullCalendar 
-                schedulerLicenseKey='GPL-My-Project-Is-Open-Source'
-                locale={ruLocale}
-                height='parent'
-                plugins={[
-                  dayGridPlugin,
-                  timeGridPlugin,
-                  interactionPlugin,
-                  listPlugin,
-                  resourceTimelinePlugin,
-                  bootstrapPlugin
-                ]}
-                themeSystem='bootstrap'
-                header={
-                  app.userGroup === '1' 
-                    ? {
-                        left:   'prev,next today',
-                        center: 'title',
-                        right:  'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
-                      } 
-                    : {
-                        left:   'prev,next today',
-                        center: 'title',
-                        right:  'dayGridMonth,timeGridWeek,timeGridDay, listWeek'
-                      } 
+      <CalendarContext.Consumer>
+        {context => (
+          <div className="section__wrapper">
+            <FullCalendar 
+              schedulerLicenseKey='GPL-My-Project-Is-Open-Source'
+              locale={ruLocale}
+              height='parent'
+              plugins={[
+                dayGridPlugin,
+                timeGridPlugin,
+                interactionPlugin,
+                listPlugin,
+                resourceTimelinePlugin,
+                bootstrapPlugin
+              ]}
+              themeSystem='bootstrap'
+              header={
+                context.acl.settings.main.edit == true 
+                  ? {
+                      left:   'prev,next today',
+                      center: 'title',
+                      right:  'resourceTimelineMonth,resourceTimelineWeek,resourceTimelineDay'
+                    } 
+                  : {
+                      left:   'prev,next today',
+                      center: 'title',
+                      right:  'dayGridMonth,timeGridWeek,timeGridDay, listWeek'
+                    } 
+              }
+              defaultView={context.acl.settings.main.edit == true ? 'resourceTimelineMonth' : 'dayGridMonth'}
+              businessHours={{
+                startTime: '09:00',
+                endTime: '19:00',
+                daysOfWeek: [1, 2, 3, 4, 5]
+              }}
+              scrollTime={'09:00:00'}
+              views={{
+                resourceTimelineDay: {
+                  selectable: context.acl.settings.main.edit == true ? true : false,
+                },
+                resourceTimelineWeek: {
+                  selectable: context.acl.settings.main.edit == true ? true : false,
+                },
+                resourceTimelineMonth: {
+                  selectable: context.acl.settings.main.edit == true ? true : false,
                 }
-                defaultView={app.userGroup === '1' ? 'resourceTimelineMonth' : 'dayGridMonth'}
-                businessHours={{
-                  startTime: '09:00',
-                  endTime: '19:00',
-                  daysOfWeek: [1, 2, 3, 4, 5]
-                }}
-                scrollTime={'09:00:00'}
-                views={{
-                  resourceTimelineDay: {
-                    selectable: app.userGroup === '1' ? true : false,
-                  },
-                  resourceTimelineWeek: {
-                    selectable: app.userGroup === '1' ? true : false,
-                  },
-                  resourceTimelineMonth: {
-                    selectable: app.userGroup === '1' ? true : false,
-                  }
-                }}
-                resourceRender={calendar.resourceRender}
-                eventRender={calendar.eventRender}
-                editable={app.userGroup === '1' ? true : false}
-                nowIndicator={true}
-                eventClick={calendar.handleEventClick}
-                select={calendar.handleSelect}
-                eventDrop={calendar.handleDrop}
-                eventResize={calendar.handleResize}
-                resources={calendar.resources}
-                events={calendar.events}
-              />
-            </div>
-          )}
-        </CalendarContext.Consumer>
+              }}
+              resourceRender={context.resourceRender}
+              eventRender={context.eventRender}
+              editable={context.acl.settings.main.edit == true ? true : false}
+              nowIndicator={true}
+              eventClick={context.handleEventClick}
+              select={context.handleSelect}
+              eventDrop={context.handleDrop}
+              eventResize={context.handleResize}
+              resources={context.resources}
+              events={context.events}
+            />
+          </div>
         )}
-      </AppContext.Consumer>
+      </CalendarContext.Consumer>
     </div>
   )
 }
@@ -706,18 +704,18 @@ function Content() {
 function Layout() {
   return (
     <div className="wrapper">
-      <AppContext.Consumer>
+      <CalendarContext.Consumer>
         {context => (
-          context.userGroup == 1 ? (
-            <>
+          context.acl.settings.main.edit == true ? (
+            <React.Fragment>
               <Sidebar />
               <Content />
-            </>
+            </React.Fragment>
           ) : (
             <Content />
           )
         )}
-      </AppContext.Consumer>
+      </CalendarContext.Consumer>
     </div>
   )
 }
