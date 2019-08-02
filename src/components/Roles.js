@@ -1,5 +1,4 @@
 import React from 'react';
-import Select from 'react-select';
 export const RolesContext = React.createContext();
 
 class Roles extends React.Component {
@@ -293,7 +292,7 @@ function Section({section, acl}) {
 
   return (
     <React.Fragment>
-      <li className="list-group-item text-primary">
+      <li className="list-group-item">
         {section}
       </li>
       {options}
@@ -310,7 +309,7 @@ function Settings({acl}) {
   })
 
   return (
-    <ul className="list-group list-group-flush">
+    <ul className="list-group list-group-flush collapse" id={`collapse${acl.title}`} data-parent="#accordionAcl">
       {sections}
     </ul>
   )
@@ -335,14 +334,16 @@ function RolesForm() {
               />
             </div>
             <label>Acl</label>
+            <div className="accordion" id="accordionAcl">
               {context.acl.map(acl => {
                 return (
-                  <div key={acl.title} className="card">
-                    <div className="card-header">{acl.title}</div>
+                  <div key={acl.title}>
+                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${acl.title}`}>{acl.title}</a>
                     <Settings acl={acl} />
                   </div>
                 )
               })}
+            </div>
             <input type="hidden" value={context.roleId} />
           </div>
           <div className="card-footer bg-white">

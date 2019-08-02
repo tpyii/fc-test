@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './components/App';
 import { BrowserRouter } from "react-router-dom";
+import $ from "jquery";
+import "bootstrap/js/dist/collapse";
 
 import './style.scss';
 
