@@ -17,12 +17,28 @@ class App extends React.Component {
       logout: this.logout,
       toggleLogin: this.toggleLogin,
       checkAcl: this.checkAcl,
+      setTitlePage: this.setTitlePage,
     }
   }
 
   componentWillMount = () => {
     if(!this.state.userId)
       this.auth();
+  }
+
+  componentDidMount = () => {
+    this.setTitlePage()
+  }
+
+  setTitlePage = () => {
+    let title = document.title.split(' - ')
+    let pathname = location.pathname.split('/')[1] || 'Welcome'
+    pathname = pathname.charAt(0).toUpperCase() + pathname.slice(1)
+    if(title.length > 1)
+      title.splice(0, 1)
+    title.unshift(pathname)
+    title = title.join(' - ')
+    document.title = title;
   }
 
   toggleLogin = (data) => {
@@ -66,6 +82,8 @@ class App extends React.Component {
         this.setState({
           user: {},
         })
+
+        this.setTitlePage();
       })
       .catch(e => console.log(e));
   }
@@ -96,11 +114,11 @@ function Routers() {
         <Switch>
           <Route exact path="/" component={() => !app.user.id ? <Welcome /> : <Redirect to="/calendar" />} />
           <Route path="/calendar" component={() => app.user.id ? <Calendar app={app} /> : <Redirect to="/" />} />
-          <Route path="/roles" component={() => app.user.id && app.checkAcl('Roles', 'main', 'show') === true ? <Roles /> : <Redirect to="/" />} />
-          <Route path="/orders" component={() => app.user.id && app.checkAcl('Orders', 'main', 'show') === true ? <Orders /> : <Redirect to="/" />} />
-          <Route path="/users" component={() => app.user.id && app.checkAcl('Users', 'main', 'show') === true ? <Users /> : <Redirect to="/" />} />
-          <Route path="/signup" component={() => !app.user.id ? <Registration /> : <Redirect to="/calendar" />} />
-          <Route path="/login" component={() => !app.user.id ? <Login /> : <Redirect to="/calendar" />} />
+          <Route path="/roles" component={() => app.user.id && app.checkAcl('Roles', 'main', 'show') === true ? <Roles app={app} /> : <Redirect to="/" />} />
+          <Route path="/orders" component={() => app.user.id && app.checkAcl('Orders', 'main', 'show') === true ? <Orders app={app} /> : <Redirect to="/" />} />
+          <Route path="/users" component={() => app.user.id && app.checkAcl('Users', 'main', 'show') === true ? <Users app={app} /> : <Redirect to="/" />} />
+          <Route path="/signup" component={() => !app.user.id ? <Registration app={app} /> : <Redirect to="/calendar" />} />
+          <Route path="/login" component={() => !app.user.id ? <Login app={app} /> : <Redirect to="/calendar" />} />
           <Route render={PageNotFoud} />
         </Switch>
       )}

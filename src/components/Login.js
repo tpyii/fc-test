@@ -3,9 +3,16 @@ import { AppContext } from './App';
 
 
 class Login extends React.Component {
-  state = {
-    userEmail: '',
-    userPassword: '',
+  constructor(props) {
+    super(props)
+    this.state = {
+      userEmail: '',
+      userPassword: '',
+    }
+  }
+
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
   }
   
   handleInputChange = event => {

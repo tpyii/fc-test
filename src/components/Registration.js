@@ -2,10 +2,17 @@ import React from 'react';
 import { Redirect } from 'react-router';
 
 class Registration extends React.Component {
-  state = {
-    userEmail: '',
-    userPassword: '',
-    isRegistration: false,
+  constructor(props) {
+    super(props)
+    this.state = {
+      userEmail: '',
+      userPassword: '',
+      isRegistration: false,
+    }
+  }
+
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
   }
 
   handleInputChange = event => {

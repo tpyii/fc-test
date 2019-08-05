@@ -62,6 +62,10 @@ class Calendar extends React.Component {
     this.fetchEvents();
   }
 
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
+  }
+
   handleEventClick = info => {
     const typeView = info.view.type;
     if(typeView == 'resourceTimelineDay'  ||

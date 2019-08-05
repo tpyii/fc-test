@@ -23,6 +23,10 @@ class Orders extends React.Component {
     this.fetchOrders();
   }
 
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
+  }
+
   handleInputChange = event => {
     const target = event.target;
     const name = target.name;

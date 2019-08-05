@@ -29,6 +29,10 @@ class Users extends React.Component {
     this.fetchRoles();
   }
 
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
+  }
+
   handleSelectChange = (name, value) => {
     this.setState({[name]: value || ''});
   }

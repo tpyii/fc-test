@@ -28,6 +28,10 @@ class Roles extends React.Component {
     this.fetchAcl();
   }
 
+  componentDidMount = () => {
+    this.props.app.setTitlePage()
+  }
+
   handleInputChangeAcl = (title, section, option) => {
     const acl = this.state.acl.map(a => {
       if(a.title == title) {
