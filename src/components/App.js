@@ -30,9 +30,9 @@ class App extends React.Component {
     this.setTitlePage()
   }
 
-  setTitlePage = () => {
+  setTitlePage = (t) => {
     let title = document.title.split(' - ')
-    let pathname = location.pathname.split('/')[1] || 'Welcome'
+    let pathname = t || location.pathname.split('/')[1] || 'Welcome'
     pathname = pathname.charAt(0).toUpperCase() + pathname.slice(1)
     if(title.length > 1)
       title.splice(0, 1)
@@ -83,6 +83,7 @@ class App extends React.Component {
           user: {},
         })
 
+        location = location.protocol + '//' + location.hostname + '/';
         this.setTitlePage();
       })
       .catch(e => console.log(e));
@@ -119,7 +120,7 @@ function Routers() {
           <Route path="/users" component={() => app.user.id && app.checkAcl('Users', 'main', 'show') === true ? <Users app={app} /> : <Redirect to="/" />} />
           <Route path="/signup" component={() => !app.user.id ? <Registration app={app} /> : <Redirect to="/calendar" />} />
           <Route path="/login" component={() => !app.user.id ? <Login app={app} /> : <Redirect to="/calendar" />} />
-          <Route render={PageNotFoud} />
+          <Route component={() => <PageNotFoud app={app} />} />
         </Switch>
       )}
     </AppContext.Consumer>
@@ -152,7 +153,8 @@ function Nav() {
   )
 }
 
-function PageNotFoud() {
+function PageNotFoud({app}) {
+  app.setTitlePage('404')
   return <div className="section__wrapper">Page Not Found</div>
 }
 
