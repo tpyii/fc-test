@@ -89,7 +89,7 @@ class Calendar extends React.Component {
         eventEnd: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: true,
         eventAllDay: info.event.allDay,
-        eventOrder: info.event.order,
+        eventOrder: info.event.extendedProps.order,
       });
     }
   }
@@ -478,8 +478,8 @@ class Calendar extends React.Component {
   }
 
   fetchEvents = () => {
-    const { userId } = this.props.app;
-    const url = this.state.acl.settings.main.edit === true ? '/api/events' : `/api/events/resource/${userId}`;
+    const { id } = this.props.app.user;
+    const url = this.state.acl.settings.main.edit === true ? '/api/events' : `/api/events/resource/${id}`;
     
     fetch(url)
       .then(responce => responce.json())
@@ -594,6 +594,7 @@ function EventsForm() {
             <div className="form-group">
               <label htmlFor="eventOrder">Order</label>
               <Select
+                isClearable
                 placeholder=""
                 id="eventOrder"
                 name="eventOrder"
