@@ -26,6 +26,8 @@ class Calendar extends React.Component {
       eventEnd: '',
       eventEditing: false,
       eventAllDay: false,
+      eventOverlap: true,
+      eventBackground: false,
       eventOrder: {},
 
       acl: this.getAcl(),
@@ -48,6 +50,7 @@ class Calendar extends React.Component {
       eventRender: this.eventRender,
       handleMultipleSelectChange: this.handleMultipleSelectChange,
       handleSelectChange: this.handleSelectChange,
+      selectOverlap: this.selectOverlap,
     }
   }
 
@@ -100,6 +103,8 @@ class Calendar extends React.Component {
         eventEditing: true,
         eventAllDay: info.event.allDay,
         eventOrder: info.event.extendedProps.order,
+        eventOverlap: info.event.overlap,
+        eventBackground: info.event.rendering === 'background',
       });
     }
   }
@@ -125,6 +130,8 @@ class Calendar extends React.Component {
         eventId: '',
         eventAllDay: false,
         eventOrder: {},
+        eventOverlap: true,
+        eventBackground: false,
       });
     }
   }
@@ -158,6 +165,10 @@ class Calendar extends React.Component {
     this.setState({[name]: value});
   }
 
+  selectOverlap = event => {
+    return event.overlap;
+  }
+
   handleDrop = info => {
     const typeView = info.view.type;
     if(typeView == 'resourceTimelineDay'  ||
@@ -188,6 +199,8 @@ class Calendar extends React.Component {
         allDay: info.event.allDay,
         resourceIds,
         order: info.event.extendedProps.order,
+        overlap: info.event.overlap,
+        rendering: info.event.rendering,
       }
 
       fetch(`/api/events/${info.event.id}`, {
@@ -209,6 +222,8 @@ class Calendar extends React.Component {
             description: result.event.description,
             allDay: result.event.allDay,
             order: result.event.order,
+            overlap: result.event.overlap,
+            rendering: result.event.rendering,
           }
 
           const events = this.state.events.map(item => {
@@ -228,6 +243,8 @@ class Calendar extends React.Component {
             eventEditing: false,
             eventAllDay: false,
             eventOrder: {},
+            eventOverlap: true,
+            eventBackground: false,
             events
           })
         }
@@ -247,6 +264,8 @@ class Calendar extends React.Component {
       allDay: info.event.allDay,
       resourceIds: item.resourceIds,
       order: item.order,
+      overlap: item.event.overlap,
+      rendering: item.event.rendering,
     }
 
     if(info.newResource && info.oldResource) {
@@ -278,6 +297,8 @@ class Calendar extends React.Component {
           description: result.event.description,
           allDay: result.event.allDay,
           order: result.event.order,
+          overlap: result.event.overlap,
+          rendering: result.event.rendering,
         }
 
         if(result.event.resourceIds)
@@ -300,6 +321,8 @@ class Calendar extends React.Component {
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
+          eventOverlap: true,
+          eventBackground: false,
           events
         })
       }
@@ -324,6 +347,8 @@ class Calendar extends React.Component {
       end: this.state.eventEnd,
       allDay: this.state.eventAllDay,
       order: this.state.eventOrder,
+      overlap: this.state.eventOverlap,
+      rendering: this.state.eventBackground,
     }
 
     fetch(`/api/events/${this.state.eventId}`, {
@@ -345,6 +370,8 @@ class Calendar extends React.Component {
           description: result.event.description,
           allDay: result.event.allDay,
           order: result.event.order,
+          overlap: result.event.overlap,
+          rendering: result.event.rendering,
         }
 
         if(result.event.resourceIds)
@@ -367,6 +394,8 @@ class Calendar extends React.Component {
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
+          eventOverlap: true,
+          eventBackground: false,
           events
         })
       }
@@ -386,6 +415,8 @@ class Calendar extends React.Component {
       eventEditing: false,
       eventAllDay: false,
       eventOrder: {},
+      eventOverlap: true,
+      eventBackground: false,
     });
   }
 
@@ -416,6 +447,8 @@ class Calendar extends React.Component {
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
+          eventOverlap: true,
+          eventBackground: false,
           events
         });
       }
@@ -440,6 +473,8 @@ class Calendar extends React.Component {
       end: this.state.eventEnd,
       allDay: this.state.eventAllDay,
       order: this.state.eventOrder,
+      overlap: this.state.eventOverlap,
+      rendering: this.state.eventBackground,
     }
 
     fetch('/api/events', {
@@ -464,6 +499,8 @@ class Calendar extends React.Component {
             eventEditing: false,
             eventAllDay: false,
             eventOrder: {},
+            eventOverlap: true,
+            eventBackground: false,
             events: [...state.events, result.event]
           }
         })
@@ -658,6 +695,34 @@ function EventsForm() {
                 All day
               </label>
             </div>
+            <div className="form-check">
+              <input 
+                className="form-check-input" 
+                type="checkbox" 
+                value={context.eventBackground}
+                checked={context.eventBackground}
+                id="eventBackground"
+                name="eventBackground"
+                onChange={context.handleInputChange} 
+              />
+              <label className="form-check-label" htmlFor="eventBackground">
+                Background
+              </label>
+            </div>
+            <div className="form-check">
+              <input 
+                className="form-check-input" 
+                type="checkbox" 
+                value={context.eventOverlap}
+                checked={context.eventOverlap}
+                id="eventOverlap"
+                name="eventOverlap"
+                onChange={context.handleInputChange} 
+              />
+              <label className="form-check-label" htmlFor="eventOverlap">
+                Overlap
+              </label>
+            </div>
             <input type="hidden" value={context.eventId} />
           </div>
           <div className="card-footer bg-white">
@@ -764,6 +829,7 @@ function Content() {
               eventResize={context.handleResize}
               resources={context.resources}
               events={context.events}
+              selectOverlap={context.selectOverlap}
             />
           </div>
         )}
