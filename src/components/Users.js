@@ -13,6 +13,8 @@ class Users extends React.Component {
       userEditing: false,
 
       roles: [],
+      settings: [],
+      dsettings: [],
 
       handleInputChange: this.handleInputChange,
       updateUser: this.updateUser,
@@ -21,12 +23,16 @@ class Users extends React.Component {
       editUser: this.editUser,
       getRoleTitle: this.getRoleTitle,
       handleSelectChange: this.handleSelectChange,
+      handleInputChangeSwitch: this.handleInputChangeSwitch,
+      handleInputChangeSelect: this.handleInputChangeSelect,
+      handleInputChangeInput: this.handleInputChangeInput,
     }
   }
 
   componentWillMount = () => {
     this.fetchUsers();
     this.fetchRoles();
+    this.fetchSettings();
   }
 
   componentDidMount = () => {
@@ -58,6 +64,71 @@ class Users extends React.Component {
     this.setState({[name]: value});
   }
 
+  handleInputChangeInput = (title, section, option) => {
+    const value = event.target.value;
+
+    const settings = this.state.settings.map(a => {
+      if(a.title == title) {
+        return (
+          {...a, 
+            settings: {
+              [section]: {
+                ...a.settings[section],
+                [option]: value || ''
+              }
+            }
+          }
+        )
+      }
+
+      return a;
+    })
+
+    this.setState({settings})
+  }
+
+  handleInputChangeSwitch = (title, section, option) => {
+    const settings = this.state.settings.map(a => {
+      if(a.title == title) {
+        return (
+          {...a, 
+            settings: {
+              [section]: {
+                ...a.settings[section],
+                [option]: !a.settings[section][option]
+              }
+            }
+          }
+        )
+      }
+
+      return a;
+    })
+
+    this.setState({settings})
+  }
+
+  handleInputChangeSelect = (title, section, option, select) => {
+    const settings = this.state.settings.map(a => {
+      if(a.title == title) {
+        return (
+          {...a, 
+            settings: {
+              [section]: {
+                ...a.settings[section],
+                [option]: select || []
+              }
+            }
+          }
+        )
+      }
+
+      return a;
+    })
+
+    this.setState({settings})
+  }
+
   updateUser = e => {
     e.preventDefault();
 
@@ -69,6 +140,7 @@ class Users extends React.Component {
     const user = {
       email: this.state.userEmail,
       role: this.state.userRole,
+      settings: this.state.settings,
     }
 
     fetch(`/api/users/${this.state.userId}`, {
@@ -96,7 +168,8 @@ class Users extends React.Component {
           userEmail: '',
           userRole: '',
           userEditing: false,
-          users
+          users,
+          settings: this.state.dsettings,
         })
       }
     })
@@ -127,7 +200,8 @@ class Users extends React.Component {
           userEmail: '',
           userRole: '',
           userEditing: false,
-          users
+          users,
+          settings: this.state.dsettings,
         });
       }
     })
@@ -140,7 +214,8 @@ class Users extends React.Component {
       userId: '',
       userEmail: '',
       userRole: '',
-      userEditing: false
+      userEditing: false,
+      settings: this.state.dsettings,
     })
   }
 
@@ -149,7 +224,8 @@ class Users extends React.Component {
       userRole: user.role,
       userEmail: user.email,
       userId: user.id,
-      userEditing: true
+      userEditing: true,
+      settings: user.settings,
     })
   }
 
@@ -175,6 +251,20 @@ class Users extends React.Component {
 
         if(result)
           this.setState({roles: result})
+      })
+      .catch(e => console.log(e));
+  }
+
+  fetchSettings = () => {
+    fetch('/api/users/settings')
+      .then(responce => responce.json())
+      .then(result => {
+        if(result) {
+          this.setState({
+            settings: result,
+            dsettings: result
+          })
+        }
       })
       .catch(e => console.log(e));
   }
@@ -217,6 +307,159 @@ function Layout() {
   )
 }
 
+function Time({section, option, settings}) {
+  const title = settings.title;
+  const value = settings.settings[section][option];
+  const id = `${title.toLowerCase()}${option}`;
+
+  return (
+    <UsersContext.Consumer>
+      {context => (
+        <React.Fragment>
+          <label htmlFor={id}>{option}</label>
+          <input 
+            type="time" 
+            className="form-control" 
+            id={id} 
+            name={option} 
+            value={value}
+            onChange={() => context.handleInputChangeInput(title, section, option)} 
+          />
+        </React.Fragment>
+      )}
+    </UsersContext.Consumer>
+  )
+}
+
+function Switch({section, option, settings}) {
+  const title = settings.title;
+  const value = settings.settings[section][option];
+  const id = `${title.toLowerCase()}${option}`;
+
+  return (
+    <UsersContext.Consumer>
+      {context => (
+        <div className="custom-control custom-switch">
+          <input 
+            name={option}
+            value={value}
+            checked={value}
+            type="checkbox" 
+            className="custom-control-input" 
+            id={id}
+            onChange={() => context.handleInputChangeSwitch(title, section, option)} 
+          />
+          <label 
+            className="custom-control-label" 
+            htmlFor={id}
+          >
+            {option}
+          </label>
+        </div>
+      )}
+    </UsersContext.Consumer>
+  )
+}
+
+function MySelect({section, option, settings}) {
+  const title = settings.title;
+  const value = settings.settings[section][option];
+  const id = `${title.toLowerCase()}${option}`;
+  const values = [
+    {
+      id: 0,
+      title: 'Sunday'
+    },
+    {
+      id: 1,
+      title: 'Monday'
+    },
+    {
+      id: 2,
+      title: 'Tuesday'
+    },
+    {
+      id: 3,
+      title: 'Wednesday'
+    },
+    {
+      id: 4,
+      title: 'Thursday'
+    },
+    {
+      id: 5,
+      title: 'Friday'
+    },
+    {
+      id: 6,
+      title: 'Saturday'
+    }
+  ]
+
+  return (
+    <UsersContext.Consumer>
+      {context => (
+        <React.Fragment>
+          <label htmlFor={id}>{option}</label>
+          <Select
+            placeholder=""
+            isMulti
+            id={id}
+            name={option}
+            onChange={(select) => context.handleInputChangeSelect(title, section, option, select)}
+            options={values}
+            getOptionLabel={(select) => select.title}
+            getOptionValue={(select) => select.id}
+            value={context.userEditing && value}
+          />
+        </React.Fragment>
+      )}
+    </UsersContext.Consumer>
+  )
+}
+
+function Section({section, settings}) {
+  const keys = Object.keys(settings.settings[section]);
+  const options = keys.map(option => {
+
+    const input = option === 'daysOfWeek'
+      ? <MySelect section={section} option={option} settings={settings} />
+      : option === 'startTime' || option === 'endTime'
+      ? <Time section={section} option={option} settings={settings} />
+      : <Switch section={section} option={option} settings={settings} />
+
+    return (
+      <li key={`${settings.title}${section}${option}`} className="list-group-item">
+        {input}
+      </li>
+    )
+  })
+
+  return (
+    <React.Fragment>
+      <li className="list-group-item">
+        {section}
+      </li>
+      {options}
+    </React.Fragment>
+  )
+}
+
+function Settings({settings}) {
+  const keys = Object.keys(settings.settings)
+  const sections = keys.map(section => {
+    return (
+      <Section key={`${settings.title}${section}`} section={section} settings={settings} />
+    )
+  })
+
+  return (
+    <ul className="list-group list-group-flush collapse" id={`collapse${settings.title}`} data-parent="#accordionSettings">
+      {sections}
+    </ul>
+  )
+}
+
 function UsersForm() {
   return (
     <UsersContext.Consumer>
@@ -247,6 +490,17 @@ function UsersForm() {
                 getOptionValue={(option) => option.id}
                 value={context.userEditing && context.roles.filter(role => role.id === context.userRole)}
               />
+            </div>
+            <label>Settings</label>
+            <div className="accordion" id="accordionSettings">
+              {context.settings.map(settings => {
+                return (
+                  <div key={settings.title}>
+                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${settings.title}`}>{settings.title}</a>
+                    <Settings settings={settings} />
+                  </div>
+                )
+              })}
             </div>
             <input type="hidden" value={context.userId} />
           </div>
