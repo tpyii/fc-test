@@ -254,7 +254,7 @@ function Layout() {
   )
 }
 
-function Switche({section, option, acl}) {
+function Switch({section, option, acl}) {
   const title = acl.title;
   const value = acl.settings[section][option];
   const id = `${title.toLowerCase()}${option}`;
@@ -290,7 +290,7 @@ function Section({section, acl}) {
   const options = keys.map(option => {
     return (
       <li key={`${acl.title}${section}${option}`} className="list-group-item">
-        <Switche section={section} option={option} acl={acl}/>
+        <Switch section={section} option={option} acl={acl}/>
       </li>
     )
   })
