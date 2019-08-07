@@ -10,6 +10,7 @@ import ruLocale from '@fullcalendar/core/locales/ru';
 import moment from 'moment';
 import { AppContext } from './App';
 import Select from 'react-select';
+import $ from "jquery";
 
 export const CalendarContext = React.createContext();
 
@@ -516,7 +517,7 @@ class Calendar extends React.Component {
     const typeView = info.view.type;
     if(typeView == 'timeGridWeek' ||
        typeView == 'timeGridDay'  ||
-       typeView == 'timeGlistWeekridWeek' ||
+       typeView == 'dayGridMonth' ||
        typeView == 'listWeek') {
 
       if(info.el) {
@@ -526,8 +527,13 @@ class Calendar extends React.Component {
 
         if(typeView == 'listWeek')
           content = info.el.querySelector('.fc-list-item-title');
-        else
+        
+        else {
           content = info.el.querySelector('.fc-content');
+
+          info.el.title = info.event.extendedProps.description || ''
+          $(info.el).tooltip();
+        }
 
         if(!content)
           return;
@@ -739,6 +745,7 @@ function Content() {
                   selectable: context.acl.settings.main.edit == true ? true : false,
                 }
               }}
+              eventLimit={true}
               resourceRender={context.resourceRender}
               eventRender={context.eventRender}
               editable={context.acl.settings.main.edit == true ? true : false}
