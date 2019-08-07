@@ -31,6 +31,7 @@ class Calendar extends React.Component {
       acl: this.getAcl(),
       resources: [],
       events: [],
+      settings: this.getSettings(),
 
       handleEventClick: this.handleEventClick,
       handleSelect: this.handleSelect,
@@ -52,6 +53,10 @@ class Calendar extends React.Component {
 
   getAcl = () => {
     return this.props.app.user.acl.find(a => a.title === 'Calendar')
+  }
+
+  getSettings = () => {
+    return this.props.app.user.settings.find(a => a.title === 'Calendar')
   }
 
   componentWillMount = () => {
@@ -728,11 +733,14 @@ function Content() {
                     } 
               }
               defaultView={context.acl.settings.main.edit == true ? 'resourceTimelineMonth' : 'dayGridMonth'}
-              businessHours={{
-                startTime: '09:00',
-                endTime: '19:00',
-                daysOfWeek: [1, 2, 3, 4, 5]
-              }}
+              businessHours={
+                !context.acl.settings.main.edit == true 
+                ? {
+                    ...context.settings.settings.businessHours, 
+                    daysOfWeek: context.settings.settings.businessHours.daysOfWeek.map(day => day.id)
+                  }
+                : false
+              }
               scrollTime={'09:00:00'}
               views={{
                 resourceTimelineDay: {
