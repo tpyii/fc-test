@@ -107,6 +107,10 @@ class Registration extends React.Component {
               <button 
                 type="submit" 
                 className="btn btn-primary" 
+                disabled={
+                  !this.state.userEmail.trim().length ||
+                  !this.state.userPassword.length
+                }
               >
                 Sign up
               </button>
