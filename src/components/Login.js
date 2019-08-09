@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppContext } from './App';
+import { Redirect } from "react-router-dom";
 
 
 class Login extends React.Component {
@@ -8,6 +9,7 @@ class Login extends React.Component {
     this.state = {
       userEmail: '',
       userPassword: '',
+      recovery: false,
     }
   }
 
@@ -38,8 +40,31 @@ class Login extends React.Component {
     });
   }
 
-  login = (event, toggleLogin) => {
-    event.preventDefault();
+  recovery = () => {
+    if(!this.state.userEmail.trim().length)
+      return false;
+
+    fetch('/api/auth/recovery', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: this.state.userEmail,
+      }),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(response => response.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error);
+        return;
+      }
+
+      this.setState({recovery: true})
+    })
+    .catch(e => console.log(e));
+  }
+
+  login = toggleLogin => {
+    event.preventDefault()
 
     if(!this.state.userEmail.trim().length || !this.state.userPassword.trim().length)
       return false;
@@ -66,12 +91,15 @@ class Login extends React.Component {
   }
 
   render() {
+    if(this.state.recovery)
+      return <Redirect to='/recovery' />
+
     return (
       <div className="wrapper">
         <div className="section section__left">
           <AppContext.Consumer>
             {app => (
-              <form className="card" onSubmit={e => this.login(e, app.toggleLogin)}>
+              <form className="card" onSubmit={() => this.login(app.toggleLogin)}>
                 <h5 className="card-header bg-white">Login</h5>
                 <div className="card-body">
                   <div className="form-group">
@@ -88,21 +116,37 @@ class Login extends React.Component {
                   </div>
                   <div className="form-group">
                     <label htmlFor="password">Password</label>
-                    <input 
-                      type="password" 
-                      className="form-control" 
-                      id="password" 
-                      placeholder="Password"
-                      name="userPassword" 
-                      value={this.state.userPassword}  
-                      onChange={this.handleInputChange}
-                    />
+                    <div className="input-group">
+                      <input 
+                        type="password" 
+                        className="form-control" 
+                        id="password" 
+                        placeholder="Password"
+                        name="userPassword" 
+                        value={this.state.userPassword}  
+                        onChange={this.handleInputChange}
+                      />
+                      <div className="input-group-append">
+                        <button 
+                          className="btn btn-outline-secondary" 
+                          type="button"
+                          disabled={!this.state.userEmail.trim().length}
+                          onClick={this.recovery}
+                        >
+                          Recovery
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="card-footer bg-white">
                   <button 
                     type="submit" 
                     className="btn btn-primary" 
+                    disabled={
+                      !this.state.userEmail.trim().length ||
+                      !this.state.userPassword.length
+                    }
                   >
                     Log in
                   </button>
