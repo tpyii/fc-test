@@ -264,8 +264,8 @@ class Calendar extends React.Component {
       allDay: info.event.allDay,
       resourceIds: item.resourceIds,
       order: item.order,
-      overlap: item.event.overlap,
-      rendering: item.event.rendering,
+      overlap: item.overlap,
+      rendering: item.rendering,
     }
 
     if(info.newResource && info.oldResource) {
