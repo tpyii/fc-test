@@ -58,6 +58,8 @@ class Calendar extends React.Component {
 
   calendarRef = React.createRef()
 
+  fetchTimeout
+
   getAcl = () => {
     return this.props.app.user.acl.find(a => a.title === 'Calendar')
   }
@@ -75,6 +77,18 @@ class Calendar extends React.Component {
 
   componentDidMount = () => {
     this.props.app.setTitlePage()
+    let calendarApi = this.calendarRef.current.getApi()
+    this.fetchTimeout = setInterval(() => {
+      if(this.state.acl.settings.main.edit === true) {
+        this.fetchResources();
+        this.fetchOrders();
+      }
+      calendarApi.refetchEvents();
+    }, 60000)
+  }
+
+  componentWillUnmount = () => {
+    clearInterval(this.fetchTimeout)
   }
 
   handleEventClick = info => {
