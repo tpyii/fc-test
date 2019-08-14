@@ -32,7 +32,7 @@ class Calendar extends React.Component {
 
       acl: this.getAcl(),
       resources: [],
-      events: [],
+      orders: [],
       settings: this.getSettings(),
 
       handleEventClick: this.handleEventClick,
@@ -51,8 +51,12 @@ class Calendar extends React.Component {
       handleMultipleSelectChange: this.handleMultipleSelectChange,
       handleSelectChange: this.handleSelectChange,
       selectOverlap: this.selectOverlap,
+
+      calendarRef: this.calendarRef,
     }
   }
+
+  calendarRef = React.createRef()
 
   getAcl = () => {
     return this.props.app.user.acl.find(a => a.title === 'Calendar')
@@ -67,8 +71,6 @@ class Calendar extends React.Component {
       this.fetchResources();
       this.fetchOrders();
     }
-
-    this.fetchEvents();
   }
 
   componentDidMount = () => {
@@ -214,24 +216,7 @@ class Calendar extends React.Component {
           console.log(result.error);
 
         if(result.event) {
-
-          let event = {
-            start: result.event.start,
-            end: result.event.end,
-            title: result.event.title,
-            description: result.event.description,
-            allDay: result.event.allDay,
-            order: result.event.order,
-            overlap: result.event.overlap,
-            rendering: result.event.rendering,
-          }
-
-          const events = this.state.events.map(item => {
-            if(item.id == info.event.id)
-              return {...item, ...event}
-
-            return item;
-          });
+          info.event.setDates(result.event.start, result.event.end)
 
           this.setState({
             eventId: '',
@@ -245,7 +230,6 @@ class Calendar extends React.Component {
             eventOrder: {},
             eventOverlap: true,
             eventBackground: false,
-            events
           })
         }
       })
@@ -255,21 +239,26 @@ class Calendar extends React.Component {
   }
 
   updateEventAfterDrop = info => {
-    let item = this.state.events.filter(item => item.id == info.event.id)[0];
+    let resourceIds = [];
+    const resources = info.event.getResources();
+
+    if(resources)
+      resources.map(resource => resourceIds.push(resource.id))
+
     let event = {
-      title: item.title,
+      title: info.event.title,
       start: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
-      end: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
-      description: item.description,
+      end: moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss'),
+      description: info.event.extendedProps.description,
       allDay: info.event.allDay,
-      resourceIds: item.resourceIds,
-      order: item.order,
-      overlap: item.overlap,
-      rendering: item.rendering,
+      resourceIds,
+      order: info.event.extendedProps.order,
+      overlap: info.event.overlap,
+      rendering: info.event.rendering,
     }
 
     if(info.newResource && info.oldResource) {
-      let resourceIds = item.resourceIds;
+      let resourceIds = event.resourceIds;
       const index = resourceIds.indexOf(info.oldResource.id);
 
       if(index != -1)
@@ -289,27 +278,10 @@ class Calendar extends React.Component {
         console.log(result.error);
 
       if(result.event) {
-
-        let event = {
-          start: result.event.start,
-          end: result.event.end,
-          title: result.event.title,
-          description: result.event.description,
-          allDay: result.event.allDay,
-          order: result.event.order,
-          overlap: result.event.overlap,
-          rendering: result.event.rendering,
-        }
+        info.event.setDates(result.event.start, result.event.end)
 
         if(result.event.resourceIds)
-          event.resourceIds = result.event.resourceIds
-
-        const events = this.state.events.map(item => {
-          if(item.id == info.event.id)
-            return {...item, ...event}
-
-          return item;
-        });
+          info.event.setResources(result.event.resourceIds)
 
         this.setState({
           eventId: '',
@@ -323,7 +295,6 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
-          events
         })
       }
     })
@@ -362,27 +333,18 @@ class Calendar extends React.Component {
         console.log(result.error);
 
       if(result.event) {
-
-        let event = {
-          start: result.event.start,
-          end: result.event.end,
-          title: result.event.title,
-          description: result.event.description,
-          allDay: result.event.allDay,
-          order: result.event.order,
-          overlap: result.event.overlap,
-          rendering: result.event.rendering,
-        }
+        let calendarApi = this.calendarRef.current.getApi()
+        const event = calendarApi.getEventById(this.state.eventId)
+        event.setDates(result.event.start, result.event.end)
+        event.setAllDay(result.event.allDay)
+        event.setProp('title', result.event.title)
+        event.setProp('overlap', result.event.overlap)
+        event.setProp('rendering', result.event.rendering)
+        event.setExtendedProp('description', result.event.description)
+        event.setExtendedProp('order', result.event.order)
 
         if(result.event.resourceIds)
-          event.resourceIds = result.event.resourceIds
-
-        const events = this.state.events.map(item => {
-          if(item.id == this.state.eventId)
-            return {...item, ...event}
-
-          return item;
-        });
+          event.setResources(result.event.resourceIds)
 
         this.setState({
           eventId: '',
@@ -396,7 +358,6 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
-          events
         })
       }
     })
@@ -435,8 +396,6 @@ class Calendar extends React.Component {
         console.log(result.error);
 
       if(result.event) {
-        const events = this.state.events.filter(event => event.id != result.event)
-      
         this.setState({
           eventId: '',
           eventTitle: '',
@@ -449,8 +408,11 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
-          events
         });
+
+        let calendarApi = this.calendarRef.current.getApi()
+        const event = calendarApi.getEventById(result.event)
+        event.remove()
       }
     })
     .catch(e => console.log(e));
@@ -501,9 +463,11 @@ class Calendar extends React.Component {
             eventOrder: {},
             eventOverlap: true,
             eventBackground: false,
-            events: [...state.events, result.event]
           }
         })
+
+        let calendarApi = this.calendarRef.current.getApi()
+        calendarApi.addEvent(result.event)
       }
     })
     .catch(e => console.log(e));
@@ -524,9 +488,12 @@ class Calendar extends React.Component {
       .catch(e => console.log(e));
   }
 
-  fetchEvents = () => {
+  fetchEvents = (info, successCallback, failCallback) => {
     const { id } = this.props.app.user;
-    const url = this.state.acl.settings.main.edit === true ? '/api/events' : `/api/events/resource/${id}`;
+    let { start, end } = info
+    start = moment(start).format('YYYY-MM-DD')
+    end = moment(end).format('YYYY-MM-DD')
+    const url = this.state.acl.settings.main.edit === true ? `/api/events/start/${start}/end/${end}` : `/api/events/start/${start}/end/${end}/resource/${id}`;
     
     fetch(url)
       .then(responce => responce.json())
@@ -535,9 +502,12 @@ class Calendar extends React.Component {
           console.log(result.error);
 
         if(result.events)
-          this.setState({events: result.events})
+          successCallback(result.events)
       })
-      .catch(e => console.log(e));
+      .catch(e => {
+        console.log(e)
+        failCallback(e)
+      });
   }
 
   fetchOrders = () => {    
@@ -772,6 +742,7 @@ function Content() {
         {context => (
           <div className="section__wrapper">
             <FullCalendar 
+              ref={context.calendarRef}
               schedulerLicenseKey='GPL-My-Project-Is-Open-Source'
               locale={ruLocale}
               height='parent'
@@ -828,7 +799,7 @@ function Content() {
               eventDrop={context.handleDrop}
               eventResize={context.handleResize}
               resources={context.resources}
-              events={context.events}
+              events={context.fetchEvents}
               selectOverlap={context.selectOverlap}
             />
           </div>
