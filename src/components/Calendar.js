@@ -117,7 +117,7 @@ class Calendar extends React.Component {
         eventResource: resourceIds,
         eventStart: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
         eventEnd: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
-        minEventEnd: moment(info.event.start).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
+        minEventEnd: moment(info.event.start).add(1, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: true,
         eventAllDay: info.event.allDay,
         eventOrder: info.event.extendedProps.order,
@@ -144,7 +144,7 @@ class Calendar extends React.Component {
         eventDescription: '',
         eventStart: moment(info.start).format('YYYY-MM-DDTHH:mm:ss'),
         eventEnd: moment(info.end).format('YYYY-MM-DDTHH:mm:ss'),
-        minEventEnd: moment(info.start).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
+        minEventEnd: moment(info.start).add(1, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: false,
         eventId: '',
         eventAllDay: false,
@@ -732,7 +732,8 @@ function EventsForm() {
                   !context.eventTitle.trim().length || 
                   !context.eventResource.length || 
                   !context.eventStart.trim().length || 
-                  !context.eventEnd.trim().length
+                  !context.eventEnd.trim().length ||
+                  context.eventStart.trim() >= context.eventEnd.trim()
                 }
               >
                 {context.eventEditing ? 'Update' : 'Add'}
