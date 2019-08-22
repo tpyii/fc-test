@@ -1,5 +1,6 @@
 import React from 'react';
 import Select from 'react-select';
+import Pagination from './Pagination';
 export const UsersContext = React.createContext();
 
 class Users extends React.Component {
@@ -16,6 +17,8 @@ class Users extends React.Component {
       settings: [],
       dsettings: [],
 
+      pagination: {},
+
       handleInputChange: this.handleInputChange,
       updateUser: this.updateUser,
       handleDeleteUser: this.handleDeleteUser,
@@ -26,6 +29,7 @@ class Users extends React.Component {
       handleInputChangeSwitch: this.handleInputChangeSwitch,
       handleInputChangeSelect: this.handleInputChangeSelect,
       handleInputChangeInput: this.handleInputChangeInput,
+      fetchUsers: this.fetchUsers,
     }
   }
 
@@ -194,15 +198,24 @@ class Users extends React.Component {
 
       if(result) {
         const users = this.state.users.filter(user => user.id != result)
-      
+        let page = this.state.pagination.page
+
+        if(!users.length) {
+          page = page == this.state.pagination.links[this.state.pagination.links.length - 1].label 
+                 && page != 1 
+                  ? --page
+                  : page;
+        }
+
         this.setState({
           userId: '',
           userEmail: '',
           userRole: '',
           userEditing: false,
-          users,
           settings: this.state.dsettings,
         });
+
+        this.fetchUsers(page)
       }
     })
     .catch(e => console.log(e));
@@ -229,15 +242,24 @@ class Users extends React.Component {
     })
   }
 
-  fetchUsers = () => {    
-    fetch('/api/users')
+  fetchUsers = page => {
+    if(event)
+      event.preventDefault();
+
+    const url = page ? `/api/users/page/${page}` : '/api/users/page/1';
+
+    fetch(url)
       .then(responce => responce.json())
       .then(result => {
         if(result.error)
           console.log(result.error);
 
-        if(result)
-          this.setState({users: result})
+        if(result) {
+          this.setState({
+            users: result.users,
+            pagination: result.pagination,
+          })
+        }
       })
       .catch(e => console.log(e));
   }
@@ -296,14 +318,24 @@ Users.contextType = UsersContext;
 
 function Layout() {
   return (
-    <div className="wrapper">
-      <div className="section section__left">
-        <UsersForm />
-      </div>
-      <div className="section section__right">
-        <UsersTable />
-      </div>
-    </div>
+    <UsersContext.Consumer>
+      {context => (
+        <div className="wrapper">
+          <div className="section section__left">
+            <UsersForm />
+          </div>
+          <div className="section section__right">
+            <div className="section__wrapper">
+              <UsersTable />
+              <Pagination 
+                pagination={context.pagination} 
+                changePage={context.fetchUsers} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </UsersContext.Consumer>
   )
 }
 
@@ -530,28 +562,26 @@ function UsersTable() {
   return (
     <UsersContext.Consumer>
       {context => (
-        <div className="section__wrapper">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Email</th>
-                <th scope="col">Role</th>
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+          {context.users.map(user => {
+            return (
+              <tr key={user.id} onClick={() => context.editUser(user)}>
+                <th scope="row">{user.id}</th>
+                <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
+                <td>{context.getRoleTitle(user)}</td>
               </tr>
-            </thead>
-            <tbody>
-            {context.users.map(user => {
-              return (
-                <tr key={user.id} onClick={() => context.editUser(user)}>
-                  <th scope="row">{user.id}</th>
-                  <td>{context.userEditing && context.userId == user.id ? context.userEmail : user.email}</td>
-                  <td>{context.getRoleTitle(user)}</td>
-                </tr>
-              )
-            })}
-            </tbody>
-          </table>
-        </div>
+            )
+          })}
+          </tbody>
+        </table>
       )}
     </UsersContext.Consumer>
   )

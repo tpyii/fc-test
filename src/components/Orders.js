@@ -1,4 +1,5 @@
 import React from 'react';
+import Pagination from './Pagination';
 export const OrdersContext = React.createContext();
 
 class Orders extends React.Component {
@@ -10,12 +11,15 @@ class Orders extends React.Component {
       orderTitle: '',
       orderEditing: false,
 
+      pagination: {},
+
       handleInputChange: this.handleInputChange,
       addOrder: this.addOrder,
       updateOrder: this.updateOrder,
       handleDeleteOrder: this.handleDeleteOrder,
       handleCancelEditOrder: this.handleCancelEditOrder,
       editOrder: this.editOrder,
+      fetchOrders: this.fetchOrders,
     }
   }
 
@@ -71,12 +75,14 @@ class Orders extends React.Component {
       }
 
       if(result) {
-        this.setState(state => {
-          return {
-            orderTitle: '',
-            orders: [...state.orders, result]
-          }
-        })
+        const orders = [...this.state.orders, result]
+        let page = this.state.pagination.page
+
+        if(orders.length > this.state.pagination.limit)
+          page = page == 1 ? page : ++page;
+
+        this.setState({orderTitle: ''})
+        this.fetchOrders(page)
       }
     })
     .catch(e => console.log(e));
@@ -142,13 +148,22 @@ class Orders extends React.Component {
 
       if(result) {
         const orders = this.state.orders.filter(order => order.id != result)
-      
+        let page = this.state.pagination.page
+
+        if(!orders.length) {
+          page = page == this.state.pagination.links[this.state.pagination.links.length - 1].label 
+                 && page != 1 
+                  ? --page
+                  : page;
+        }
+
         this.setState({
           orderId: '',
           orderTitle: '',
           orderEditing: false,
-          orders
         });
+
+        this.fetchOrders(page)
       }
     })
     .catch(e => console.log(e));
@@ -171,8 +186,13 @@ class Orders extends React.Component {
     })
   }
 
-  fetchOrders = () => {    
-    fetch('/api/orders')
+  fetchOrders = page => {
+    if(event)
+      event.preventDefault();
+
+    const url = page ? `/api/orders/page/${page}` : '/api/orders/page/1';
+
+    fetch(url)
       .then(responce => responce.json())
       .then(result => {
         if(result.error) {
@@ -180,8 +200,12 @@ class Orders extends React.Component {
           return;
         }
 
-        if(result)
-          this.setState({orders: result})
+        if(result) {
+          this.setState({
+            orders: result.orders,
+            pagination: result.pagination,
+          })
+        }
       })
       .catch(e => console.log(e));
   }
@@ -199,14 +223,24 @@ Orders.contextType = OrdersContext;
 
 function Layout() {
   return (
-    <div className="wrapper">
-      <div className="section section__left">
-        <OrdersForm />
-      </div>
-      <div className="section section__right">
-        <OrdersTable />
-      </div>
-    </div>
+    <OrdersContext.Consumer>
+      {context => (
+        <div className="wrapper">
+          <div className="section section__left">
+            <OrdersForm />
+          </div>
+          <div className="section section__right">
+            <div className="section__wrapper">
+              <OrdersTable />
+              <Pagination 
+                pagination={context.pagination} 
+                changePage={context.fetchOrders} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </OrdersContext.Consumer>
   )
 }
 
@@ -257,26 +291,24 @@ function OrdersTable() {
   return (
     <OrdersContext.Consumer>
       {context => (
-        <div className="section__wrapper">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Title</th>
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Title</th>
+            </tr>
+          </thead>
+          <tbody>
+          {context.orders.map(order => {
+            return (
+              <tr key={order.id} onClick={() => context.editOrder(order)}>
+                <th scope="row">{order.id}</th>
+                <td>{context.orderEditing && context.orderId == order.id ? context.orderTitle : order.title}</td>
               </tr>
-            </thead>
-            <tbody>
-            {context.orders.map(order => {
-              return (
-                <tr key={order.id} onClick={() => context.editOrder(order)}>
-                  <th scope="row">{order.id}</th>
-                  <td>{context.orderEditing && context.orderId == order.id ? context.orderTitle : order.title}</td>
-                </tr>
-              )
-            })}
-            </tbody>
-          </table>
-        </div>
+            )
+          })}
+          </tbody>
+        </table>
       )}
     </OrdersContext.Consumer>
   )

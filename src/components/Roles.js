@@ -1,4 +1,5 @@
 import React from 'react';
+import Pagination from './Pagination';
 export const RolesContext = React.createContext();
 
 class Roles extends React.Component {
@@ -13,6 +14,8 @@ class Roles extends React.Component {
       acl: [],
       dacl: [],
 
+      pagination: {},
+
       handleInputChangeAcl: this.handleInputChangeAcl,
       handleInputChange: this.handleInputChange,
       updateRole: this.updateRole,
@@ -20,6 +23,7 @@ class Roles extends React.Component {
       handleCancelEditRole: this.handleCancelEditRole,
       editRole: this.editRole,
       addRole: this.addRole,
+      fetchRoles: this.fetchRoles,
     }
   }
 
@@ -98,13 +102,20 @@ class Roles extends React.Component {
       }
 
       if(result) {
+        const roles = [...this.state.roles, result]
+        let page = this.state.pagination.page
+
+        if(roles.length > this.state.pagination.limit)
+          page = page == 1 ? page : ++page;
+
         this.setState(state => {
           return {
             roleTitle: '',
-            roles: [...state.roles, result],
-            acl: state.dacl
+            acl: state.dacl,
           }
         })
+
+        this.fetchRoles(page)
       }
     })
     .catch(e => console.log(e));
@@ -141,12 +152,14 @@ class Roles extends React.Component {
           return role;
         });
 
-        this.setState({
-          roleId: '',
-          roleTitle: '',
-          roleEditing: false,
-          roles,
-          acl: this.state.dacl
+        this.setState(state => {
+          return {
+            roleId: '',
+            roleTitle: '',
+            roleEditing: false,
+            roles,
+            acl: state.dacl,
+          }
         })
       }
     })
@@ -171,14 +184,25 @@ class Roles extends React.Component {
 
       if(result) {
         const roles = this.state.roles.filter(role => role.id != result)
+        let page = this.state.pagination.page
+
+        if(!roles.length) {
+          page = page == this.state.pagination.links[this.state.pagination.links.length - 1].label 
+                 && page != 1 
+                  ? --page
+                  : page;
+        }
       
-        this.setState({
-          roleId: '',
-          roleTitle: '',
-          roleEditing: false,
-          roles,
-          acl: this.state.dacl
+        this.setState(state => {
+          return {
+            roleId: '',
+            roleTitle: '',
+            roleEditing: false,
+            acl: state.dacl,
+          }
         });
+
+        this.fetchRoles(page)
       }
     })
     .catch(e => console.log(e));
@@ -186,11 +210,13 @@ class Roles extends React.Component {
 
   handleCancelEditRole = e => {
     e.preventDefault();
-    this.setState({
-      roleId: '',
-      roleTitle: '',
-      roleEditing: false,
-      acl: this.state.dacl,
+    this.setState(state => {
+      return {
+        roleId: '',
+        roleTitle: '',
+        roleEditing: false,
+        acl: state.dacl,
+      }
     })
   }
 
@@ -203,15 +229,24 @@ class Roles extends React.Component {
     })
   }
 
-  fetchRoles = () => {
-    fetch('/api/roles')
+  fetchRoles = page => {
+    if(event)
+      event.preventDefault();
+
+    const url = page ? `/api/roles/page/${page}` : '/api/roles/page/1';
+
+    fetch(url)
       .then(responce => responce.json())
       .then(result => {
         if(result.error)
           console.log(result.error);
 
-        if(result) 
-          this.setState({roles: result})
+        if(result) {
+          this.setState({
+            roles: result.roles,
+            pagination: result.pagination,
+          })
+        }
       })
       .catch(e => console.log(e));
   }
@@ -243,14 +278,24 @@ Roles.contextType = RolesContext;
 
 function Layout() {
   return (
-    <div className="wrapper">
-      <div className="section section__left">
-        <RolesForm />
-      </div>
-      <div className="section section__right">
-        <RolesTable />
-      </div>
-    </div>
+    <RolesContext.Consumer>
+      {context => (
+        <div className="wrapper">
+          <div className="section section__left">
+            <RolesForm />
+          </div>
+          <div className="section section__right">
+            <div className="section__wrapper">
+              <RolesTable />
+              <Pagination 
+                pagination={context.pagination} 
+                changePage={context.fetchRoles} 
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </RolesContext.Consumer>
   )
 }
 
@@ -378,26 +423,24 @@ function RolesTable() {
   return (
     <RolesContext.Consumer>
       {context => (
-        <div className="section__wrapper">
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Title</th>
+        <table className="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Title</th>
+            </tr>
+          </thead>
+          <tbody>
+          {context.roles.map(role => {
+            return (
+              <tr key={role.id} onClick={() => context.editRole(role)}>
+                <th scope="row">{role.id}</th>
+                <td>{context.roleEditing && context.roleId == role.id ? context.roleTitle : role.title}</td>
               </tr>
-            </thead>
-            <tbody>
-            {context.roles.map(role => {
-              return (
-                <tr key={role.id} onClick={() => context.editRole(role)}>
-                  <th scope="row">{role.id}</th>
-                  <td>{context.roleEditing && context.roleId == role.id ? context.roleTitle : role.title}</td>
-                </tr>
-              )
-            })}
-            </tbody>
-          </table>
-        </div>
+            )
+          })}
+          </tbody>
+        </table>
       )}
     </RolesContext.Consumer>
   )
