@@ -24,6 +24,7 @@ class Calendar extends React.Component {
       eventResource: [],
       eventStart: '',
       eventEnd: '',
+      minEventEnd: '',
       eventEditing: false,
       eventAllDay: false,
       eventOverlap: true,
@@ -116,6 +117,7 @@ class Calendar extends React.Component {
         eventResource: resourceIds,
         eventStart: moment(info.event.start).format('YYYY-MM-DDTHH:mm:ss'),
         eventEnd: info.event.end ? moment(info.event.end).format('YYYY-MM-DDTHH:mm:ss') : moment(info.event.start).add(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
+        minEventEnd: moment(info.event.start).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: true,
         eventAllDay: info.event.allDay,
         eventOrder: info.event.extendedProps.order,
@@ -142,6 +144,7 @@ class Calendar extends React.Component {
         eventDescription: '',
         eventStart: moment(info.start).format('YYYY-MM-DDTHH:mm:ss'),
         eventEnd: moment(info.end).format('YYYY-MM-DDTHH:mm:ss'),
+        minEventEnd: moment(info.start).add(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
         eventEditing: false,
         eventId: '',
         eventAllDay: false,
@@ -239,6 +242,7 @@ class Calendar extends React.Component {
             eventDescription: '',
             eventStart: '',
             eventEnd: '',
+            minEventEnd: '',
             eventEditing: false,
             eventAllDay: false,
             eventOrder: {},
@@ -304,6 +308,7 @@ class Calendar extends React.Component {
           eventDescription: '',
           eventStart: '',
           eventEnd: '',
+          minEventEnd: '',
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
@@ -321,7 +326,8 @@ class Calendar extends React.Component {
     if(!this.state.eventTitle.trim().length ||
        !this.state.eventStart.trim().length ||
        !this.state.eventEnd.trim().length   ||
-       !this.state.eventResource.length)
+       !this.state.eventResource.length     ||
+       this.state.eventStart.trim() >= this.state.eventEnd.trim())
       return;
 
     const event = {
@@ -367,6 +373,7 @@ class Calendar extends React.Component {
           eventDescription: '',
           eventStart: '',
           eventEnd: '',
+          minEventEnd: '',
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
@@ -387,6 +394,7 @@ class Calendar extends React.Component {
       eventResource: [],
       eventStart: '',
       eventEnd: '',
+      minEventEnd: '',
       eventEditing: false,
       eventAllDay: false,
       eventOrder: {},
@@ -417,6 +425,7 @@ class Calendar extends React.Component {
           eventResource: [],
           eventStart: '',
           eventEnd: '',
+          minEventEnd: '',
           eventEditing: false,
           eventAllDay: false,
           eventOrder: {},
@@ -438,7 +447,8 @@ class Calendar extends React.Component {
     if(!this.state.eventTitle.trim().length ||
        !this.state.eventStart.trim().length ||
        !this.state.eventEnd.trim().length   ||
-       !this.state.eventResource.length)
+       !this.state.eventResource.length     ||
+       this.state.eventStart.trim() >= this.state.eventEnd.trim())
       return;
 
     const event = {
@@ -472,6 +482,7 @@ class Calendar extends React.Component {
             eventDescription: '',
             eventStart: '',
             eventEnd: '',
+            minEventEnd: '',
             eventEditing: false,
             eventAllDay: false,
             eventOrder: {},
@@ -651,6 +662,7 @@ function EventsForm() {
                 name="eventStart" 
                 value={context.eventStart} 
                 onChange={context.handleInputChange} 
+                required
               />
             </div>
             <div className="form-group">
@@ -661,8 +673,10 @@ function EventsForm() {
                 id="eventEnd" 
                 type="datetime-local"
                 name="eventEnd" 
+                min={context.minEventEnd}
                 value={context.eventEnd} 
                 onChange={context.handleInputChange} 
+                required
               />
             </div>
             <div className="form-check">
