@@ -181,7 +181,15 @@ class Calendar extends React.Component {
     else
       value = target.value;
 
-    this.setState({[name]: value});
+    if(name === 'eventStart') {
+      this.setState({
+        [name]: value,
+        minEventEnd: moment(value).add(1, 'minutes').format('YYYY-MM-DDTHH:mm:ss'),
+      });
+    }
+
+    else
+      this.setState({[name]: value});
   }
 
   selectOverlap = event => {
