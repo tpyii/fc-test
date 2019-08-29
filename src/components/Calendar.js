@@ -500,7 +500,7 @@ class Calendar extends React.Component {
         })
 
         let calendarApi = this.calendarRef.current.getApi()
-        calendarApi.addEvent(result.event)
+        calendarApi.refetchEvents()
       }
     })
     .catch(e => console.log(e));
