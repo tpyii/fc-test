@@ -733,19 +733,57 @@ function EventsForm() {
           </div>
           <div className="card-footer bg-white">
             <div className="btn-group">
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
-                disabled={
-                  !context.eventTitle.trim().length || 
-                  !context.eventResource.length || 
-                  !context.eventStart.trim().length || 
-                  !context.eventEnd.trim().length ||
-                  context.eventStart.trim() >= context.eventEnd.trim()
-                }
-              >
-                {context.eventEditing ? 'Update' : 'Add'}
-              </button>
+              {context.eventEditing && 
+                <div className="btn-group">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    disabled={
+                      !context.eventTitle.trim().length || 
+                      !context.eventResource.length || 
+                      !context.eventStart.trim().length || 
+                      !context.eventEnd.trim().length ||
+                      context.eventStart.trim() >= context.eventEnd.trim()
+                    }
+                  >
+                    Update
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-primary dropdown-toggle dropdown-toggle-split" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false"
+                    disabled={
+                      !context.eventTitle.trim().length || 
+                      !context.eventResource.length || 
+                      !context.eventStart.trim().length || 
+                      !context.eventEnd.trim().length ||
+                      context.eventStart.trim() >= context.eventEnd.trim()
+                    }
+                  >
+                    <span className="sr-only">Toggle Dropdown</span>
+                  </button>
+                  <div className="dropdown-menu">
+                    <a className="dropdown-item" href="#" onClick={context.addEvent}>Add</a>
+                  </div>
+                </div>
+              }
+              {!context.eventEditing && 
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  disabled={
+                    !context.eventTitle.trim().length || 
+                    !context.eventResource.length || 
+                    !context.eventStart.trim().length || 
+                    !context.eventEnd.trim().length ||
+                    context.eventStart.trim() >= context.eventEnd.trim()
+                  }
+                >
+                  Add
+                </button>
+              }
               {context.eventEditing && <button type="button" className="btn btn-primary" onClick={context.handleDeleteEvent}>Delete</button>}
               {
                 context.eventTitle.trim().length ||

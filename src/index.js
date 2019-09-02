@@ -6,6 +6,7 @@ import "popper.js/dist/popper";
 import "bootstrap/js/dist/collapse";
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/util";
+import "bootstrap/js/dist/dropdown";
 
 import './style.scss';
 
