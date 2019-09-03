@@ -7,6 +7,7 @@ import Users from './Users';
 import Orders from './Orders';
 import Roles from './Roles';
 import Recovery from './Recovery';
+import Groups from './Groups';
 
 export const AppContext = React.createContext();
 
@@ -116,6 +117,7 @@ function Routers() {
         <Switch>
           <Route exact path="/" component={() => !app.user.id ? <Welcome /> : <Redirect to="/calendar" />} />
           <Route path="/calendar" component={() => app.user.id ? <Calendar app={app} /> : <Redirect to="/" />} />
+          <Route path="/groups" component={() => app.user.id && app.checkAcl('Groups', 'main', 'show') === true ? <Groups app={app} /> : <Redirect to="/" />} />
           <Route path="/roles" component={() => app.user.id && app.checkAcl('Roles', 'main', 'show') === true ? <Roles app={app} /> : <Redirect to="/" />} />
           <Route path="/orders" component={() => app.user.id && app.checkAcl('Orders', 'main', 'show') === true ? <Orders app={app} /> : <Redirect to="/" />} />
           <Route path="/users" component={() => app.user.id && app.checkAcl('Users', 'main', 'show') === true ? <Users app={app} /> : <Redirect to="/" />} />
