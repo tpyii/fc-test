@@ -864,6 +864,8 @@ function Content() {
                   selectable: context.acl.settings.main.edit == true ? true : false,
                 }
               }}
+              resourceGroupField='group'
+              resourceOrder='group,title'
               eventLimit={true}
               resourceRender={context.resourceRender}
               eventRender={context.eventRender}
