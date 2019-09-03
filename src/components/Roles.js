@@ -37,8 +37,14 @@ class Roles extends React.Component {
   }
 
   handleInputChangeAcl = (title, section, option) => {
-    const acl = this.state.acl.map(a => {
-      if(a.title == title) {
+
+    const acl = this.state.dacl.map(d => {
+      let a = this.state.acl.filter(o => o.title === d.title)[0]
+      
+      if(!a)
+        a = d
+
+      if(d.title == title) {
         return (
           {...a, 
             settings: {
@@ -299,9 +305,9 @@ function Layout() {
   )
 }
 
-function Switch({section, option, acl}) {
-  const title = acl.title;
-  const value = acl.settings[section][option];
+function Switch({section, option, acl, dacl}) {
+  const title = dacl.title;
+  const value = acl ? acl.settings[section][option] : false;
   const id = `${title.toLowerCase()}${option}`;
 
   return (
@@ -330,12 +336,12 @@ function Switch({section, option, acl}) {
   )
 }
 
-function Section({section, acl}) {
-  const keys = Object.keys(acl.settings[section]);
+function Section({section, acl, dacl}) {
+  const keys = Object.keys(dacl.settings[section]);
   const options = keys.map(option => {
     return (
-      <li key={`${acl.title}${section}${option}`} className="list-group-item">
-        <Switch section={section} option={option} acl={acl}/>
+      <li key={`${dacl.title}${section}${option}`} className="list-group-item">
+        <Switch section={section} option={option} acl={acl} dacl={dacl} />
       </li>
     )
   })
@@ -350,16 +356,16 @@ function Section({section, acl}) {
   )
 }
 
-function Settings({acl}) {
-  const keys = Object.keys(acl.settings)
+function Settings({acl, dacl}) {
+  const keys = Object.keys(dacl.settings)
   const sections = keys.map(section => {
     return (
-      <Section key={`${acl.title}${section}`} section={section} acl={acl} />
+      <Section key={`${dacl.title}${section}`} section={section} acl={acl} dacl={dacl} />
     )
   })
 
   return (
-    <ul className="list-group list-group-flush collapse" id={`collapse${acl.title}`} data-parent="#accordionAcl">
+    <ul className="list-group list-group-flush collapse" id={`collapse${dacl.title}`} data-parent="#accordionAcl">
       {sections}
     </ul>
   )
@@ -385,11 +391,12 @@ function RolesForm() {
             </div>
             <label>Acl</label>
             <div className="accordion" id="accordionAcl">
-              {context.acl.map(acl => {
+              {context.dacl.map(dacl => {
+                const acl = context.acl.filter(acl => dacl.title === acl.title)[0]
                 return (
-                  <div key={acl.title}>
-                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${acl.title}`}>{acl.title}</a>
-                    <Settings acl={acl} />
+                  <div key={dacl.title}>
+                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${dacl.title}`}>{dacl.title}</a>
+                    <Settings acl={acl} dacl={dacl} />
                   </div>
                 )
               })}
