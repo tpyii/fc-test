@@ -71,11 +71,31 @@ class Users extends React.Component {
   handleInputChangeInput = (title, section, option) => {
     const value = event.target.value;
 
-    const settings = this.state.settings.map(a => {
-      if(a.title == title) {
+    const settings = this.state.dsettings.map(d => {
+      let a = this.state.settings.filter(o => o.title === d.title)[0]
+      
+      if(!a)
+        a = d
+
+      if(!a.settings.hasOwnProperty(section) ||
+         !a.settings[section].hasOwnProperty(option)) {
+        a = {
+          ...a,
+          settings: {
+            ...a.settings,
+            [section]: {
+                ...d.settings[section],
+                [option]: d.settings[section][option]
+            }
+          }
+        }
+      }
+
+      if(d.title == title) {
         return (
           {...a, 
             settings: {
+              ...a.settings,
               [section]: {
                 ...a.settings[section],
                 [option]: value || ''
@@ -92,11 +112,32 @@ class Users extends React.Component {
   }
 
   handleInputChangeSwitch = (title, section, option) => {
-    const settings = this.state.settings.map(a => {
-      if(a.title == title) {
+    const settings = this.state.dsettings.map(d => {
+      let a = this.state.settings.filter(o => o.title === d.title)[0]
+      
+      if(!a)
+        a = d
+
+      if(!a.settings.hasOwnProperty(section) ||
+         !a.settings[section].hasOwnProperty(option)) {
+        a = {
+          ...a,
+          settings: {
+            ...a.settings,
+            [section]: {
+                ...d.settings[section],
+                [option]: d.settings[section][option]
+            }
+          }
+        }
+      }
+        
+
+      if(d.title == title) {
         return (
           {...a, 
             settings: {
+              ...a.settings,
               [section]: {
                 ...a.settings[section],
                 [option]: !a.settings[section][option]
@@ -113,11 +154,31 @@ class Users extends React.Component {
   }
 
   handleInputChangeSelect = (title, section, option, select) => {
-    const settings = this.state.settings.map(a => {
-      if(a.title == title) {
+    const settings = this.state.dsettings.map(d => {
+      let a = this.state.settings.filter(o => o.title === d.title)[0]
+      
+      if(!a)
+        a = d
+
+      if(!a.settings.hasOwnProperty(section) ||
+         !a.settings[section].hasOwnProperty(option)) {
+        a = {
+          ...a,
+          settings: {
+            ...a.settings,
+            [section]: {
+                ...d.settings[section],
+                [option]: d.settings[section][option]
+            }
+          }
+        }
+      }
+
+      if(d.title == title) {
         return (
           {...a, 
             settings: {
+              ...a.settings,
               [section]: {
                 ...a.settings[section],
                 [option]: select || []
@@ -339,9 +400,13 @@ function Layout() {
   )
 }
 
-function Time({section, option, settings}) {
-  const title = settings.title;
-  const value = settings.settings[section][option];
+function Time({section, option, settings, dsettings}) {
+  const title = dsettings.title;
+  const value = !settings.settings.hasOwnProperty(section) 
+                  ? '00:00'
+                  : settings.settings[section].hasOwnProperty(option)
+                  ? settings.settings[section][option]
+                  : '00:00';
   const id = `${title.toLowerCase()}${option}`;
 
   return (
@@ -363,9 +428,13 @@ function Time({section, option, settings}) {
   )
 }
 
-function Switch({section, option, settings}) {
-  const title = settings.title;
-  const value = settings.settings[section][option];
+function Switch({section, option, settings, dsettings}) {
+  const title = dsettings.title;
+  const value = !settings.settings.hasOwnProperty(section) 
+                  ? false
+                  : settings.settings[section].hasOwnProperty(option)
+                  ? settings.settings[section][option]
+                  : false;
   const id = `${title.toLowerCase()}${option}`;
 
   return (
@@ -393,40 +462,51 @@ function Switch({section, option, settings}) {
   )
 }
 
-function MySelect({section, option, settings}) {
-  const title = settings.title;
-  const value = settings.settings[section][option];
+function MySelect({section, option, settings, dsettings}) {
+  const title = dsettings.title;
+  const value = !settings.settings.hasOwnProperty(section) 
+                  ? {}
+                  : settings.settings[section].hasOwnProperty(option)
+                  ? settings.settings[section][option]
+                  : {};
   const id = `${title.toLowerCase()}${option}`;
-  const values = [
-    {
-      id: 0,
-      title: 'Sunday'
-    },
-    {
-      id: 1,
-      title: 'Monday'
-    },
-    {
-      id: 2,
-      title: 'Tuesday'
-    },
-    {
-      id: 3,
-      title: 'Wednesday'
-    },
-    {
-      id: 4,
-      title: 'Thursday'
-    },
-    {
-      id: 5,
-      title: 'Friday'
-    },
-    {
-      id: 6,
-      title: 'Saturday'
-    }
-  ]
+
+  let values = dsettings.settings[section][option]
+  let isMulti = false
+
+  if(section === 'businessHours') {
+    isMulti = true
+    values = [
+      {
+        id: 0,
+        title: 'Sunday'
+      },
+      {
+        id: 1,
+        title: 'Monday'
+      },
+      {
+        id: 2,
+        title: 'Tuesday'
+      },
+      {
+        id: 3,
+        title: 'Wednesday'
+      },
+      {
+        id: 4,
+        title: 'Thursday'
+      },
+      {
+        id: 5,
+        title: 'Friday'
+      },
+      {
+        id: 6,
+        title: 'Saturday'
+      }
+    ]
+  }
 
   return (
     <UsersContext.Consumer>
@@ -435,7 +515,8 @@ function MySelect({section, option, settings}) {
           <label htmlFor={id}>{option}</label>
           <Select
             placeholder=""
-            isMulti
+            isMulti={isMulti}
+            isClearable
             id={id}
             name={option}
             onChange={(select) => context.handleInputChangeSelect(title, section, option, select)}
@@ -450,18 +531,18 @@ function MySelect({section, option, settings}) {
   )
 }
 
-function Section({section, settings}) {
-  const keys = Object.keys(settings.settings[section]);
+function Section({section, settings, dsettings}) {
+  const keys = Object.keys(dsettings.settings[section]);
   const options = keys.map(option => {
 
-    const input = option === 'daysOfWeek'
-      ? <MySelect section={section} option={option} settings={settings} />
+    const input = option === 'daysOfWeek' || option === 'group'
+      ? <MySelect section={section} option={option} settings={settings} dsettings={dsettings} />
       : option === 'startTime' || option === 'endTime'
-      ? <Time section={section} option={option} settings={settings} />
-      : <Switch section={section} option={option} settings={settings} />
+      ? <Time section={section} option={option} settings={settings} dsettings={dsettings} />
+      : <Switch section={section} option={option} settings={settings} dsettings={dsettings} />
 
     return (
-      <li key={`${settings.title}${section}${option}`} className="list-group-item">
+      <li key={`${dsettings.title}${section}${option}`} className="list-group-item">
         {input}
       </li>
     )
@@ -477,16 +558,16 @@ function Section({section, settings}) {
   )
 }
 
-function Settings({settings}) {
-  const keys = Object.keys(settings.settings)
+function Settings({settings, dsettings}) {
+  const keys = Object.keys(dsettings.settings)
   const sections = keys.map(section => {
     return (
-      <Section key={`${settings.title}${section}`} section={section} settings={settings} />
+      <Section key={`${dsettings.title}${section}`} section={section} settings={settings} dsettings={dsettings} />
     )
   })
 
   return (
-    <ul className="list-group list-group-flush collapse" id={`collapse${settings.title}`} data-parent="#accordionSettings">
+    <ul className="list-group list-group-flush collapse" id={`collapse${dsettings.title}`} data-parent="#accordionSettings">
       {sections}
     </ul>
   )
@@ -525,11 +606,12 @@ function UsersForm() {
             </div>
             <label>Settings</label>
             <div className="accordion" id="accordionSettings">
-              {context.settings.map(settings => {
+              {context.dsettings.map(dsettings => {
+                const settings = context.settings.filter(settings => dsettings.title === settings.title)[0]
                 return (
-                  <div key={settings.title}>
-                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${settings.title}`}>{settings.title}</a>
-                    <Settings settings={settings} />
+                  <div key={dsettings.title}>
+                    <a href="#" className="list-group-item list-group-item-action" data-toggle="collapse" data-target={`#collapse${dsettings.title}`}>{dsettings.title}</a>
+                    <Settings settings={settings} dsettings={dsettings} />
                   </div>
                 )
               })}
