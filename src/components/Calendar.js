@@ -241,7 +241,7 @@ class Calendar extends React.Component {
           console.log(result.error);
 
         if(result.event) {
-          info.event.setDates(result.event.start, result.event.end)
+          info.event.setDates(result.event.start, result.event.end, {allDay: result.event.allDay})
 
           this.setState({
             eventId: '',
@@ -304,7 +304,7 @@ class Calendar extends React.Component {
         console.log(result.error);
 
       if(result.event) {
-        info.event.setDates(result.event.start, result.event.end)
+        info.event.setDates(result.event.start, result.event.end, {allDay: result.event.allDay})
 
         if(result.event.resourceIds)
           info.event.setResources(result.event.resourceIds)
@@ -363,8 +363,7 @@ class Calendar extends React.Component {
       if(result.event) {
         let calendarApi = this.calendarRef.current.getApi()
         const event = calendarApi.getEventById(this.state.eventId)
-        event.setDates(result.event.start, result.event.end)
-        event.setAllDay(result.event.allDay)
+        event.setDates(result.event.start, result.event.end, {allDay: result.event.allDay})
         event.setProp('title', result.event.title)
         event.setProp('overlap', result.event.overlap)
         event.setProp('rendering', result.event.rendering)
