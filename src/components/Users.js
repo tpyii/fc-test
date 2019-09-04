@@ -400,6 +400,34 @@ function Layout() {
   )
 }
 
+function Input({section, option, settings, dsettings}) {
+  const title = dsettings.title;
+  const value = !settings.settings.hasOwnProperty(section) 
+                  ? ''
+                  : settings.settings[section].hasOwnProperty(option)
+                  ? settings.settings[section][option]
+                  : '';
+  const id = `${title.toLowerCase()}${option}`;
+
+  return (
+    <UsersContext.Consumer>
+      {context => (
+        <React.Fragment>
+          <label htmlFor={id}>{option}</label>
+          <input 
+            type="text" 
+            className="form-control" 
+            id={id} 
+            name={option} 
+            value={value}
+            onChange={() => context.handleInputChangeInput(title, section, option)} 
+          />
+        </React.Fragment>
+      )}
+    </UsersContext.Consumer>
+  )
+}
+
 function Time({section, option, settings, dsettings}) {
   const title = dsettings.title;
   const value = !settings.settings.hasOwnProperty(section) 
@@ -539,6 +567,8 @@ function Section({section, settings, dsettings}) {
       ? <MySelect section={section} option={option} settings={settings} dsettings={dsettings} />
       : option === 'startTime' || option === 'endTime'
       ? <Time section={section} option={option} settings={settings} dsettings={dsettings} />
+      : option === 'resourceText'
+      ? <Input section={section} option={option} settings={settings} dsettings={dsettings} />
       : <Switch section={section} option={option} settings={settings} dsettings={dsettings} />
 
     return (
