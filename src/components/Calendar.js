@@ -575,8 +575,12 @@ class Calendar extends React.Component {
         else {
           content = info.el.querySelector('.fc-content');
 
-          info.el.title = info.event.extendedProps.description || ''
-          $(info.el).tooltip();
+          $(info.el).popover({
+            container: info.el,
+            trigger: 'hover',
+            title: info.event.title,
+            content: info.event.extendedProps.description || ''
+          });
         }
 
         if(!content)
