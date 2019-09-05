@@ -62,3 +62,17 @@ form {
 .popover-header {
   color: #212529;
 }
+
+.fc-timeline-event {
+  .fc-content {
+    overflow: hidden;
+  }
+
+  .fc-time {
+    padding: 0 3px;
+  }
+
+  .fc-title {
+    display: block;
+  }
+}
