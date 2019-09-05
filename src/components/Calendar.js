@@ -30,6 +30,7 @@ class Calendar extends React.Component {
       eventOverlap: true,
       eventBackground: false,
       eventOrder: {},
+      error: '',
 
       acl: this.getAcl(),
       resources: [],
@@ -123,6 +124,7 @@ class Calendar extends React.Component {
         eventOrder: info.event.extendedProps.order,
         eventOverlap: info.event.overlap,
         eventBackground: info.event.rendering === 'background',
+        error: '',
       });
     }
   }
@@ -151,6 +153,7 @@ class Calendar extends React.Component {
         eventOrder: {},
         eventOverlap: true,
         eventBackground: false,
+        error: '',
       });
     }
   }
@@ -237,8 +240,10 @@ class Calendar extends React.Component {
       })
       .then(responce => responce.json())
       .then(result => {
-        if(result.error)
+        if(result.error) {
           console.log(result.error);
+          this.setState({error: result.error})
+        }
 
         if(result.event) {
           info.event.setDates(result.event.start, result.event.end, {allDay: result.event.allDay})
@@ -256,6 +261,7 @@ class Calendar extends React.Component {
             eventOrder: {},
             eventOverlap: true,
             eventBackground: false,
+            error: '',
           })
         }
       })
@@ -300,8 +306,10 @@ class Calendar extends React.Component {
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error)
+      if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
+      }
 
       if(result.event) {
         info.event.setDates(result.event.start, result.event.end, {allDay: result.event.allDay})
@@ -322,6 +330,7 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
+          error: '',
         })
       }
     })
@@ -357,8 +366,10 @@ class Calendar extends React.Component {
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error)
+      if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
+      }
 
       if(result.event) {
         let calendarApi = this.calendarRef.current.getApi()
@@ -386,6 +397,7 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
+          error: '',
         })
       }
     })
@@ -407,6 +419,7 @@ class Calendar extends React.Component {
       eventOrder: {},
       eventOverlap: true,
       eventBackground: false,
+      error: '',
     });
   }
 
@@ -421,8 +434,10 @@ class Calendar extends React.Component {
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error)
+      if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
+      }
 
       if(result.event) {
         this.setState({
@@ -438,6 +453,7 @@ class Calendar extends React.Component {
           eventOrder: {},
           eventOverlap: true,
           eventBackground: false,
+          error: '',
         });
 
         let calendarApi = this.calendarRef.current.getApi()
@@ -477,8 +493,10 @@ class Calendar extends React.Component {
     })
     .then(responce => responce.json())
     .then(result => {
-      if(result.error)
+      if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
+      }
 
       if(result.event) {
         this.setState(state => {
@@ -495,6 +513,7 @@ class Calendar extends React.Component {
             eventOrder: {},
             eventOverlap: true,
             eventBackground: false,
+            error: '',
           }
         })
 
@@ -734,6 +753,11 @@ function EventsForm() {
             </div>
             <input type="hidden" value={context.eventId} />
           </div>
+          {context.error && (
+            <div className="card-footer bg-white">
+              <small className="text-danger">{context.error}</small>
+            </div>
+          )}
           <div className="card-footer bg-white">
             <div className="btn-group">
               {context.eventEditing && 

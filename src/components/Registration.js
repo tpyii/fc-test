@@ -8,6 +8,7 @@ class Registration extends React.Component {
       userEmail: '',
       userPassword: '',
       isRegistration: false,
+      error: '',
     }
   }
 
@@ -59,6 +60,7 @@ class Registration extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error)
+        this.setState({error: result.error})
         return;
       }
 
@@ -103,6 +105,11 @@ class Registration extends React.Component {
                 />
               </div>
             </div>
+            {this.state.error && (
+              <div className="card-footer bg-white">
+                <small className="text-danger">{this.state.error}</small>
+              </div>
+            )}
             <div className="card-footer bg-white">
               <button 
                 type="submit" 

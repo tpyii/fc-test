@@ -9,6 +9,7 @@ class Roles extends React.Component {
       roleId: '',
       roleTitle: '',
       roleEditing: false,
+      error: '',
 
       roles: [],
       acl: [],
@@ -104,6 +105,7 @@ class Roles extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error)
+        this.setState({error: result.error})
         return;
       }
 
@@ -118,6 +120,7 @@ class Roles extends React.Component {
           return {
             roleTitle: '',
             acl: state.dacl,
+            error: '',
           }
         })
 
@@ -147,6 +150,7 @@ class Roles extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -165,6 +169,7 @@ class Roles extends React.Component {
             roleEditing: false,
             roles,
             acl: state.dacl,
+            error: '',
           }
         })
       }
@@ -185,6 +190,7 @@ class Roles extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -205,6 +211,7 @@ class Roles extends React.Component {
             roleTitle: '',
             roleEditing: false,
             acl: state.dacl,
+            error: '',
           }
         });
 
@@ -222,6 +229,7 @@ class Roles extends React.Component {
         roleTitle: '',
         roleEditing: false,
         acl: state.dacl,
+        error: '',
       }
     })
   }
@@ -232,6 +240,7 @@ class Roles extends React.Component {
       roleId: role.id,
       roleEditing: true,
       acl: role.acl,
+      error: '',
     })
   }
 
@@ -403,6 +412,11 @@ function RolesForm() {
             </div>
             <input type="hidden" value={context.roleId} />
           </div>
+          {context.error && (
+            <div className="card-footer bg-white">
+              <small className="text-danger">{context.error}</small>
+            </div>
+          )}
           <div className="card-footer bg-white">
             <div className="btn-group">
               <button 

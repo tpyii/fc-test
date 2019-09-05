@@ -8,6 +8,7 @@ class Recovery extends React.Component {
       secretKey: '',
       userPassword: '',
       complete: false,
+      error: '',
     }
 
     console.log(this, props)
@@ -58,6 +59,7 @@ class Recovery extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -99,6 +101,11 @@ class Recovery extends React.Component {
                   />
                 </div>
             </div>
+            {this.state.error && (
+              <div className="card-footer bg-white">
+                <small className="text-danger">{this.state.error}</small>
+              </div>
+            )}
             <div className="card-footer bg-white">
               <button 
                 type="submit" 

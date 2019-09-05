@@ -10,6 +10,7 @@ class Orders extends React.Component {
       orderId: '',
       orderTitle: '',
       orderEditing: false,
+      error: '',
 
       pagination: {},
 
@@ -71,6 +72,7 @@ class Orders extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error)
+        this.setState({error: result.error})
         return;
       }
 
@@ -81,7 +83,10 @@ class Orders extends React.Component {
         if(orders.length > this.state.pagination.limit)
           page = page == 1 ? page : ++page;
 
-        this.setState({orderTitle: ''})
+        this.setState({
+          orderTitle: '',
+          error: '',
+        })
         this.fetchOrders(page)
       }
     })
@@ -108,6 +113,7 @@ class Orders extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -123,7 +129,8 @@ class Orders extends React.Component {
           orderId: '',
           orderTitle: '',
           orderEditing: false,
-          orders
+          orders,
+          error: '',
         })
       }
     })
@@ -143,6 +150,7 @@ class Orders extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -161,6 +169,7 @@ class Orders extends React.Component {
           orderId: '',
           orderTitle: '',
           orderEditing: false,
+          error: '',
         });
 
         this.fetchOrders(page)
@@ -174,7 +183,8 @@ class Orders extends React.Component {
     this.setState({
       orderId: '',
       orderTitle: '',
-      orderEditing: false
+      orderEditing: false,
+      error: '',
     })
   }
 
@@ -182,7 +192,8 @@ class Orders extends React.Component {
     this.setState({
       orderTitle: order.title,
       orderId: order.id,
-      orderEditing: true
+      orderEditing: true,
+      error: '',
     })
   }
 
@@ -264,6 +275,11 @@ function OrdersForm() {
             </div>
             <input type="hidden" value={context.orderId} />
           </div>
+          {context.error && (
+            <div className="card-footer bg-white">
+              <small className="text-danger">{context.error}</small>
+            </div>
+          )}
           <div className="card-footer bg-white">
             <div className="btn-group">
               <button 

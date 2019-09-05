@@ -10,6 +10,7 @@ class Groups extends React.Component {
       groupId: '',
       groupTitle: '',
       groupEditing: false,
+      error: '',
 
       pagination: {},
 
@@ -71,6 +72,7 @@ class Groups extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error)
+        this.setState({error: result.error})
         return;
       }
 
@@ -81,7 +83,10 @@ class Groups extends React.Component {
         if(groups.length > this.state.pagination.limit)
           page = page == 1 ? page : ++page;
 
-        this.setState({groupTitle: ''})
+        this.setState({
+          groupTitle: '',
+          error: '',
+        })
         this.fetchGroups(page)
       }
     })
@@ -108,6 +113,7 @@ class Groups extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -123,7 +129,8 @@ class Groups extends React.Component {
           groupId: '',
           groupTitle: '',
           groupEditing: false,
-          groups
+          groups,
+          error: '',
         })
       }
     })
@@ -143,6 +150,7 @@ class Groups extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -161,6 +169,7 @@ class Groups extends React.Component {
           groupId: '',
           groupTitle: '',
           groupEditing: false,
+          error: '',
         });
 
         this.fetchGroups(page)
@@ -174,7 +183,8 @@ class Groups extends React.Component {
     this.setState({
       groupId: '',
       groupTitle: '',
-      groupEditing: false
+      groupEditing: false,
+      error: '',
     })
   }
 
@@ -182,7 +192,8 @@ class Groups extends React.Component {
     this.setState({
       groupTitle: group.title,
       groupId: group.id,
-      groupEditing: true
+      groupEditing: true,
+      error: '',
     })
   }
 
@@ -264,6 +275,11 @@ function GroupsForm() {
             </div>
             <input type="hidden" value={context.groupId} />
           </div>
+          {context.error && (
+            <div className="card-footer bg-white">
+              <small className="text-danger">{context.error}</small>
+            </div>
+          )}
           <div className="card-footer bg-white">
             <div className="btn-group">
               <button 

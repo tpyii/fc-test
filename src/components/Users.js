@@ -12,6 +12,7 @@ class Users extends React.Component {
       userEmail: '',
       userRole: '',
       userEditing: false,
+      error: '',
 
       roles: [],
       settings: [],
@@ -217,6 +218,7 @@ class Users extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -235,6 +237,7 @@ class Users extends React.Component {
           userEditing: false,
           users,
           settings: this.state.dsettings,
+          error: '',
         })
       }
     })
@@ -254,6 +257,7 @@ class Users extends React.Component {
     .then(result => {
       if(result.error) {
         console.log(result.error);
+        this.setState({error: result.error})
         return;
       }
 
@@ -274,6 +278,7 @@ class Users extends React.Component {
           userRole: '',
           userEditing: false,
           settings: this.state.dsettings,
+          error: '',
         });
 
         this.fetchUsers(page)
@@ -290,6 +295,7 @@ class Users extends React.Component {
       userRole: '',
       userEditing: false,
       settings: this.state.dsettings,
+      error: '',
     })
   }
 
@@ -300,6 +306,7 @@ class Users extends React.Component {
       userId: user.id,
       userEditing: true,
       settings: user.settings,
+      error: '',
     })
   }
 
@@ -648,6 +655,11 @@ function UsersForm() {
             </div>
             <input type="hidden" value={context.userId} />
           </div>
+          {context.error && (
+            <div className="card-footer bg-white">
+              <small className="text-danger">{context.error}</small>
+            </div>
+          )}
           <div className="card-footer bg-white">
             <div className="btn-group">
               <button 
