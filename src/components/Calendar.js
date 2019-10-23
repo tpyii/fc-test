@@ -883,6 +883,12 @@ function Content() {
               views={{
                 resourceTimelineDay: {
                   selectable: context.acl.settings.main.edit == true ? true : false,
+                  titleFormat: {
+                    month: 'long',
+                    year: 'numeric',
+                    day: 'numeric',
+                    weekday: 'short'
+                  }
                 },
                 resourceTimelineWeek: {
                   selectable: context.acl.settings.main.edit == true ? true : false,
