@@ -534,7 +534,7 @@ class Calendar extends React.Component {
         }
 
         if(result)
-          this.setState({resources: result})
+          this.setState({resources: result.filter(resource => !resource.hide)})
       })
       .catch(e => console.log(e));
   }
