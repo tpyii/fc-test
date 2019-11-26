@@ -62,12 +62,32 @@ class Calendar extends React.Component {
 
   fetchTimeout
 
+  changeTitleTimeout
+
+  notification = false
+
   getAcl = () => {
     return this.props.app.user.acl.find(a => a.title === 'Calendar')
   }
 
   getSettings = () => {
     return this.props.app.user.settings.find(a => a.title === 'Calendar')
+  }
+
+  changeNotificationTitle = () => {
+    if(this.notification === false) {
+      const title = ['******************************', null];
+      let i = 0;
+
+      this.changeTitleTimeout = setInterval(() => {
+        this.props.app.setTitlePage(title[i++ % 2])
+        this.props.app.setFavicon(i % 2)
+      }, 1000);
+
+      window.addEventListener('click', this.updateStatusNotification)
+    
+      this.notification = true
+    }
   }
 
   componentWillMount = () => {
@@ -91,6 +111,10 @@ class Calendar extends React.Component {
 
   componentWillUnmount = () => {
     clearInterval(this.fetchTimeout)
+    clearInterval(this.changeTitleTimeout)
+
+    if(this.notification === true)
+      this.props.app.setFavicon();
   }
 
   handleEventClick = info => {
@@ -552,8 +576,13 @@ class Calendar extends React.Component {
         if(result.error)
           console.log(result.error);
 
-        if(result.events)
-          successCallback(result.events)
+        if(!result.events)
+            result.events = [];
+
+        if(result.notice)
+          this.changeNotificationTitle()
+
+        successCallback(result.events)
       })
       .catch(e => {
         console.log(e)
@@ -574,6 +603,33 @@ class Calendar extends React.Component {
           this.setState({orders: result})
       })
       .catch(e => console.log(e));
+  }
+
+  updateStatusNotification = () => {
+    const { id } = this.props.app.user
+    const data = {active: false}
+
+    fetch(`/api/notifications/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers: {'content-type': 'application/json'}
+    })
+    .then(responce => responce.json())
+    .then(result => {
+      if(result.error) {
+        console.log(result.error)
+        return false
+      }
+
+      else if(result.success === 'OK') {
+        window.removeEventListener('click', this.updateStatusNotification)
+        clearInterval(this.changeTitleTimeout);
+        this.props.app.setTitlePage();
+        this.props.app.setFavicon();
+        this.notification = false;
+      }
+    })
+    .catch(e => console.log(e));
   }
 
   eventRender = info => {
