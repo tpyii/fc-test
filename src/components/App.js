@@ -8,6 +8,8 @@ import Orders from './Orders';
 import Roles from './Roles';
 import Recovery from './Recovery';
 import Groups from './Groups';
+import faviconBlackY from '../images/favicon-black-y.png';
+import faviconRedY from '../images/favicon-red-y.png';
 
 export const AppContext = React.createContext();
 
@@ -20,6 +22,7 @@ class App extends React.Component {
       toggleLogin: this.toggleLogin,
       checkAcl: this.checkAcl,
       setTitlePage: this.setTitlePage,
+      setFavicon: this.setFavicon,
     }
   }
 
@@ -30,6 +33,23 @@ class App extends React.Component {
 
   componentDidMount = () => {
     this.setTitlePage()
+    this.setFavicon()
+  }
+
+  setFavicon = alt => {
+    let link = document.querySelector('[rel="shortcut icon"]');
+    const href = alt ? faviconRedY : faviconBlackY;
+
+    if(!link) {
+      link = document.createElement('link');
+      link.rel = 'shortcut icon';
+      link.href = href;
+      link.type = 'image/png';
+      document.head.append(link);
+    }
+
+    else
+      link.href = href;
   }
 
   setTitlePage = (t) => {
